@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: #f9fafb; /* Light Gray background */
+  color: #1f2937; /* Dark Gray text */
+}
+
+/* Custom Utilities for Animations */
+@keyframes grow {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-grow {
+  animation: grow 0.5s ease-out forwards;
+}
+
+.pet-avatar {
+  transition: transform 0.3s ease;
+}
+
+.pet-avatar:hover {
+  transform: scale(1.1);
+}

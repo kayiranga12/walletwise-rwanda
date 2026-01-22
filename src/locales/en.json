@@ -1,0 +1,39 @@
+{
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "deposit": "Deposit",
+        "withdraw": "Withdraw"
+    },
+    "auth": {
+        "login": "Login",
+        "signup": "Sign Up",
+        "email": "Email",
+        "password": "Password",
+        "join": "Join WalletWise",
+        "welcomeBack": "Welcome Back"
+    },
+    "goals": {
+        "createGoal": "Create New Goal",
+        "goalName": "Goal Name",
+        "targetAmount": "Target Amount",
+        "choosePet": "Choose your savings pet",
+        "deadline": "Deadline",
+        "colorTheme": "Color Theme",
+        "yourGoals": "Your Goals"
+    },
+    "dashboard": {
+        "welcome": "Welcome",
+        "totalSavings": "Total Savings",
+        "activeGoals": "Active Goals",
+        "recentActivity": "Recent Activity",
+        "whatsHappening": "Here's what's happening with your savings."
+    },
+    "profile": {
+        "settings": "Settings",
+        "language": "Language",
+        "logout": "Logout"
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "common": {
+        "save": "Bika",
+        "cancel": "Hagarika",
+        "delete": "Siba",
+        "edit": "Hindura",
+        "deposit": "Bitsa",
+        "withdraw": "Kubikuza"
+    },
+    "auth": {
+        "login": "Injira",
+        "signup": "Iyandikishe",
+        "email": "Imeli",
+        "password": "Ijambo ry'ibanga",
+        "join": "Iyandikishe kuri WalletWise",
+        "welcomeBack": "Murakaza neza"
+    },
+    "goals": {
+        "createGoal": "Shiraho Intego Nshya",
+        "goalName": "Izina ry'intego",
+        "targetAmount": "Amafaranga wifuza kubika",
+        "choosePet": "Hitamo inyamaswa yawe",
+        "deadline": "Itariki ntarengwa",
+        "colorTheme": "Hitamo ibara",
+        "yourGoals": "Intego Zawe"
+    },
+    "dashboard": {
+        "welcome": "Muraho",
+        "totalSavings": "Amafaranga Yose Yabitswe",
+        "activeGoals": "Intego Zikoreshwa",
+        "recentActivity": "Ibikorwa Biheruka",
+        "whatsHappening": "Dore uko ubwizigame bwawe buhagaze."
+    },
+    "profile": {
+        "settings": "Igenamiterere",
+        "language": "Ururimi",
+        "logout": "Sohoka"
+    }
+}
