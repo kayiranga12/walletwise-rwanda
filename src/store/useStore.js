@@ -13,19 +13,12 @@ const useStore = create((set, get) => ({
 
     // Auth
     initializeAuth: async () => {
-        set({ isLoading: true });
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            set({ session, user: session?.user ?? null });
-
-            supabase.auth.onAuthStateChange((_event, session) => {
-                set({ session, user: session?.user ?? null });
-            });
-        } catch (error) {
-            console.error('Error initializing auth:', error);
-        } finally {
-            set({ isLoading: false });
-        }
+        // Bypass login with a mock user
+        set({
+            isLoading: false,
+            user: { id: 'mock-user-123', email: 'bypass@example.com', user_metadata: { username: 'Bypass User' } },
+            session: { access_token: 'mock-token' }
+        });
     },
 
     logout: async () => {

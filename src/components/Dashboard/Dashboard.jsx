@@ -22,6 +22,7 @@ const Dashboard = () => {
         // This is a bit complex in Dexie without relational support, so we do it manually or assume standard fetch
         // For prototype: fetch all transactions for user's goals
         const userGoals = await db.goals.where('user_id').equals(user.id).keys();
+        if (userGoals.length === 0) return [];
         const txs = await db.transactions.where('goal_id').anyOf(userGoals).reverse().limit(5).toArray();
 
         // Enrich with goal name
