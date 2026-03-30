@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { auth } from '../../lib/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Signup = () => {
@@ -16,26 +17,11 @@ const Signup = () => {
         setError(null);
 
         try {
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        username,
-                    },
-                },
-            });
-
-            if (error) throw error;
-
-            // If auto-confirm is enabled, or just redirect to tell them to check email
-            // For this prototype, we assume email auth might be set to auto-confirm or we handle the "check email" state
-            if (data.user) {
-                // Create user profile in 'users' table if not triggered by Supabase Hook (redundancy for prototype)
-                /* 
-                // Note: Ideally, use a Supabase Trigger for this. 
-                // But for client-side prototype, we can attempt to insert if RLS allows.
-                */
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            if (userCredential.user) {
+                await updateProfile(userCredential.user, {
+                    displayName: username
+                });
                 navigate('/');
             }
         } catch (err) {

@@ -1,5 +1,6 @@
 import { db } from './db';
-import { supabase } from './supabase';
+import { dbRemote } from './firebase';
+import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export const syncData = async () => {
     if (!navigator.onLine) return;
@@ -7,37 +8,36 @@ export const syncData = async () => {
     const queue = await db.syncQueue.toArray();
     if (queue.length === 0) return;
 
-    console.log(`Syncing ${queue.length} items...`);
+    console.log(`Syncing ${queue.length} items to Firebase...`);
 
     for (const item of queue) {
         try {
-            let error = null;
+            let hasError = false;
 
-            // Handle different tables
-            if (item.table === 'goals') {
+            // Map Dexie tables to Firestore collections
+            let collectionName = item.table;
+            if (item.table === 'goals') collectionName = 'savings_goals';
+
+            const docRef = doc(dbRemote, collectionName, item.data.id);
+
+            try {
                 if (item.action === 'INSERT') {
-                    const { error: err } = await supabase.from('savings_goals').insert(item.data);
-                    error = err;
+                    await setDoc(docRef, item.data);
                 } else if (item.action === 'UPDATE') {
-                    const { id, ...updates } = item.data;
-                    const { error: err } = await supabase.from('savings_goals').update(updates).eq('id', id);
-                    error = err;
+                    const updates = { ...item.data };
+                    delete updates.id;
+                    await updateDoc(docRef, updates);
                 } else if (item.action === 'DELETE') {
-                    const { error: err } = await supabase.from('savings_goals').delete().eq('id', item.data.id);
-                    error = err;
+                    await deleteDoc(docRef);
                 }
-            } else if (item.table === 'transactions') {
-                if (item.action === 'INSERT') {
-                    const { error: err } = await supabase.from('transactions').insert(item.data);
-                    error = err;
-                }
-                // Add UPDATE/DELETE for transactions if needed
+            } catch (err) {
+                console.error('Firebase sync error:', err);
+                hasError = true;
             }
 
-            if (error) {
-                console.error('Sync failed for item:', item, error);
-                // If error is not retryable (e.g. duplicate key), maybe delete from queue?
-                // For now, we keep it to retry later or handle manually
+            if (hasError) {
+                console.error('Sync failed for item:', item);
+                // Can retry manually later or handle specific edge cases here
             } else {
                 // Remove from queue on success
                 await db.syncQueue.delete(item.id);

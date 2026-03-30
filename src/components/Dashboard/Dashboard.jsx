@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../lib/db';
 import useStore from '../../store/useStore';
 import StatsOverview from './StatsOverview';
 import GoalCard, { AddGoalCard } from './GoalCard';
 import RecentActivity from './RecentActivity';
+import BudgetDashboard from '../Budget/BudgetDashboard';
+import NetWorthDashboard from '../NetWorth/NetWorthDashboard';
 
 const Dashboard = () => {
     const { user } = useStore();
+    const [activeTab, setActiveTab] = useState('overview');
 
     // Fetch Goals from Dexie (reactive)
     const goals = useLiveQuery(
@@ -46,23 +49,46 @@ const Dashboard = () => {
                     <h1 className="text-2xl font-bold text-gray-900">
                         Mwaramutse, {user?.user_metadata?.username || 'Saver'}! 👋
                     </h1>
-                    <p className="text-gray-500">Here's what's happening with your savings.</p>
+                    <p className="text-gray-500">Here's what's happening with your finances.</p>
                 </div>
             </div>
 
-            <StatsOverview totalSavings={totalSavings} activeGoalsCount={activeGoalsCount} />
-
-            <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Your Goals</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AddGoalCard />
-                    {goals.map(goal => (
-                        <GoalCard key={goal.id} goal={goal} />
-                    ))}
-                </div>
+            {/* Tabs */}
+            <div className="flex space-x-6 border-b border-gray-200">
+                <button 
+                    onClick={() => setActiveTab('overview')}
+                    className={`pb-3 px-1 font-medium text-sm transition-colors border-b-2 ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                >Overview</button>
+                <button 
+                    onClick={() => setActiveTab('budget')}
+                    className={`pb-3 px-1 font-medium text-sm transition-colors border-b-2 ${activeTab === 'budget' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                >50/30/20 Budget</button>
+                <button 
+                    onClick={() => setActiveTab('networth')}
+                    className={`pb-3 px-1 font-medium text-sm transition-colors border-b-2 ${activeTab === 'networth' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                >Net Worth Tracking</button>
             </div>
 
-            <RecentActivity transactions={transactions} />
+            {activeTab === 'overview' && (
+                <div className="space-y-6 animate-fade-in-up">
+                    <StatsOverview totalSavings={totalSavings} activeGoalsCount={activeGoalsCount} />
+
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Your Goals</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <AddGoalCard />
+                            {goals.map(goal => (
+                                <GoalCard key={goal.id} goal={goal} />
+                            ))}
+                        </div>
+                    </div>
+
+                    <RecentActivity transactions={transactions} />
+                </div>
+            )}
+
+            {activeTab === 'budget' && <BudgetDashboard />}
+            {activeTab === 'networth' && <NetWorthDashboard />}
         </div>
     );
 };

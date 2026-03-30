@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabase';
+import { auth } from '../lib/firebase';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 
-const useStore = create((set, get) => ({
+const useStore = create((set) => ({
     user: null,
     session: null,
     isLoading: true,
@@ -12,17 +13,29 @@ const useStore = create((set, get) => ({
     setLoading: (isLoading) => set({ isLoading }),
 
     // Auth
-    initializeAuth: async () => {
-        // Bypass login with a mock user
-        set({
-            isLoading: false,
-            user: { id: 'mock-user-123', email: 'bypass@example.com', user_metadata: { username: 'Bypass User' } },
-            session: { access_token: 'mock-token' }
+    initializeAuth: () => {
+        // Listen to Firebase auth state changes
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const token = await user.getIdToken();
+                const mappedUser = {
+                    id: user.uid,
+                    email: user.email,
+                    user_metadata: {
+                        username: user.displayName || 'Saver'
+                    }
+                };
+                set({ user: mappedUser, session: { access_token: token }, isLoading: false });
+            } else {
+                set({ user: null, session: null, isLoading: false });
+            }
         });
+        
+        return unsubscribe;
     },
 
     logout: async () => {
-        await supabase.auth.signOut();
+        await signOut(auth);
         set({ user: null, session: null });
     }
 }));

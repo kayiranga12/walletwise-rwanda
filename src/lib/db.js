@@ -9,6 +9,18 @@ db.version(1).stores({
     syncQueue: '++id, table, action, data, timestamp'
 });
 
+db.version(2).stores({
+    users: 'id, email',
+    goals: 'id, user_id, name, created_at, synced',
+    transactions: 'id, goal_id, synced, created_at',
+    syncQueue: '++id, table, action, data, timestamp',
+    incomes: 'id, user_id, amount, date, synced, created_at',
+    expenses: 'id, user_id, amount, category, date, synced, created_at',
+    assets: 'id, user_id, name, type, amount, synced, created_at',
+    liabilities: 'id, user_id, name, type, amount, synced, created_at',
+    netWorthHistory: 'id, user_id, date, net_worth'
+});
+
 // Helper to add to sync queue
 export const addToSyncQueue = async (table, action, data) => {
     await db.syncQueue.add({

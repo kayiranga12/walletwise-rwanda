@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '../../store/useStore';
-import { supabase } from '../../lib/supabase';
+import { auth } from '../../lib/firebase';
+import { updateProfile } from 'firebase/auth';
 import LanguageToggle from './LanguageToggle';
 
 const ProfileSettings = () => {
@@ -20,13 +21,12 @@ const ProfileSettings = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { data, error } = await supabase.auth.updateUser({
-                data: { username },
-            });
-
-            if (error) throw error;
-            if (data.user) {
-                setUser(data.user);
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, {
+                    displayName: username
+                });
+                
+                setUser({ ...user, user_metadata: { ...user.user_metadata, username }});
                 alert('Profile updated successfully!');
             }
         } catch (error) {
