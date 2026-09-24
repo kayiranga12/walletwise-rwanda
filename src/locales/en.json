@@ -75,7 +75,8 @@
         "reports": "Reports",
         "settings": "Settings",
         "more": "More",
-        "add": "Add"
+        "add": "Add",
+        "salary": "Salary"
     },
     "sync": {
         "synced": "All changes saved to cloud",
@@ -128,7 +129,10 @@
         "insights": "Smart insights",
         "noInsights": "Add income and expenses to get personal tips.",
         "budgetSnapshot": "Budget this month",
-        "yourGoals": "Your goals"
+        "yourGoals": "Your goals",
+        "afterBills": "{{amount}} after upcoming bills",
+        "paydayTitle": "It's payday! 🎉",
+        "paydayBody": "Save {{amount}} to your goals before spending starts."
     },
     "money": {
         "title": "Money",
@@ -209,7 +213,17 @@
         "splitTotal": "Total: {{total}}%",
         "splitSaved": "Budget split updated",
         "nearToast": "Heads up: {{bucket}} is above 80% of this month's budget.",
-        "overToast": "{{bucket}} is now over this month's budget."
+        "overToast": "{{bucket}} is now over this month's budget.",
+        "limits": "Spending limits",
+        "limitsHint": "Cap single categories like transport or airtime and get warned before you overspend.",
+        "noLimits": "No limits yet.",
+        "addLimit": "Add limit",
+        "limitTitle": "Spending limit",
+        "limitHint": "You will be warned at 80% and when you pass the limit.",
+        "limitPerMonth": "Limit per month (RWF)",
+        "removeLimit": "Remove",
+        "limitOverToast": "You passed your {{category}} limit for this month.",
+        "limitNearToast": "{{category}} is above 80% of its monthly limit."
     },
     "goals": {
         "title": "Goals",
@@ -256,7 +270,17 @@
         "milestoneBody": "{{name}}: {{percent}}% saved.",
         "keepGoing": "Keep going",
         "statusBehind": "Behind schedule",
-        "statusOnTrack": "On track · {{date}}"
+        "statusOnTrack": "On track · {{date}}",
+        "autoSave": "Save every payday (RWF)",
+        "autoSaveHint": "This amount is suggested on the Salary page each month. Leave empty to use what the deadline needs.",
+        "emergencyFlag": "This is my emergency fund",
+        "emergencyFlagHint": "Money for surprises like illness or losing income – not for planned spending.",
+        "emergencyName": "Emergency fund",
+        "emergencyTitle": "Emergency fund",
+        "emergencyCovered": "{{amount}} saved – covers {{months}} months of essential spending.",
+        "emergencyRecommend": "Aim for {{amount}} – {{months}} months of your essential (Needs) spending.",
+        "emergencyNoData": "Record your Needs spending for a month and we will suggest a target.",
+        "emergencyStart": "Start emergency fund"
     },
     "pets": {
         "lion": "Lion",
@@ -338,7 +362,9 @@
         "topExpenses": "Biggest expenses",
         "goalProgress": "Goal progress",
         "empty": "Nothing recorded for this month.",
-        "printHint": "In the print window, choose \"Save as PDF\"."
+        "printHint": "In the print window, choose \"Save as PDF\".",
+        "trend": "Last 6 months",
+        "saved": "Saved"
     },
     "insights": {
         "overBudget": "You're {{amount}} over your {{bucket}} budget this month.",
@@ -353,7 +379,12 @@
         "goalBehind": "\"{{name}}\" needs {{amount}} a month to finish on time.",
         "goalEta": "\"{{name}}\" is on track – done around {{date}}.",
         "alerts": "Alerts",
-        "noAlerts": "No alerts. You're doing great!"
+        "noAlerts": "No alerts. You're doing great!",
+        "limitOver": "You're {{amount}} over your {{category}} limit this month.",
+        "limitNear": "{{category}} is at {{percent}}% of its monthly limit.",
+        "safeAfterBills": "After your upcoming bills, you can spend about {{amount}} per day.",
+        "billsShort": "Your upcoming bills are {{amount}} more than what you have left this month.",
+        "noEmergencyFund": "You have no emergency fund yet. Start one on the Goals page – aim for 3 months of essentials."
     },
     "profile": {
         "settings": "Settings",
@@ -370,5 +401,45 @@
         "dataHint": "Download a full copy of everything you've recorded.",
         "backup": "Download backup (JSON)",
         "cloudSync": "Cloud sync"
+    },
+    "salary": {
+        "title": "Salary & Payday",
+        "subtitle": "Plan every franc of your salary the day it arrives.",
+        "paydayToast": "Salary received! Open Salary to plan it and save to your goals first.",
+        "noSalary": "No salary recorded this month yet. Add it to see your payday plan.",
+        "receivedIn": "Salary received in {{month}}",
+        "usedSoFar": "{{amount}} used",
+        "payYourselfFirst": "Pay yourself first",
+        "payYourselfFirstHint": "Move money to your goals as soon as you are paid – before spending starts.",
+        "noGoalPlan": "No goal has a monthly saving amount yet.",
+        "yourAmount": "Your monthly amount",
+        "suggested": "Suggested to meet the deadline",
+        "done": "Saved",
+        "overSavings": "Your goal plan is more than your Savings budget of {{amount}}.",
+        "saveNow": "Save {{amount}} to goals now",
+        "allSaved": "All goals got their share this month. Well done!",
+        "savedToGoals": "{{amount}} saved to your goals",
+        "upcomingBills": "Upcoming bills",
+        "noBills": "No recurring bills left this month. Add rent, school fees or ikimina in Recurring.",
+        "dueOn": "Due on day {{day}}",
+        "billsTotal": "Still to pay this month",
+        "afterBills": "Left after bills",
+        "calculator": "Net salary calculator",
+        "calculatorHint": "Enter a gross monthly salary to see PAYE, RSSB and take-home pay.",
+        "gross": "Gross monthly salary (RWF)",
+        "paye": "PAYE (income tax)",
+        "pension": "RSSB pension",
+        "maternity": "Maternity leave",
+        "cbhi": "Mutuelle (CBHI)",
+        "net": "Take-home pay",
+        "estimateNote": "Estimate for a regular employee: PAYE 0% up to 60,000, 10% to 100,000, 20% to 200,000, 30% above. Allowances and exemptions are not included.",
+        "payday": "Payday",
+        "useAsSalary": "Add as my monthly salary",
+        "ruleExists": "Your salary of {{amount}} is added automatically on day {{day}} each month."
+    },
+    "errors": {
+        "title": "Something went wrong on this screen",
+        "body": "Your data is safe on this device. Reload, or go back home. If it keeps happening, send us the message below.",
+        "reload": "Reload"
     }
 }

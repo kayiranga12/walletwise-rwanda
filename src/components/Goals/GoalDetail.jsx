@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Trash2, Plus, Minus, Pencil, CalendarClock, TrendingUp, X } from 'lucide-react';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { db } from '../../lib/db';
+import { normalizeRow, normalizeRows } from '../../lib/normalize';
 import { addGoalTransaction, deleteGoalTransaction, deleteGoal, goalProgress, forecastGoal } from '../../lib/goals';
 import { getPet, getGoalColor } from '../../lib/categories';
 import { formatMoney, formatDate, todayISO } from '../../lib/format';
@@ -37,10 +38,10 @@ const GoalDetail = () => {
     const [busy, setBusy] = useState(false);
     const [confirm, setConfirm] = useState(null); // 'goal' | transaction
 
-    const goal = useLiveQuery(() => db.goals.get(id), [id]);
+    const goal = useLiveQuery(() => db.goals.get(id).then(g => (g ? normalizeRow(g) : null)), [id]);
     const transactions = useLiveQuery(
-        () => db.transactions.where('goal_id').equals(id).toArray()
-            .then(rows => rows.sort((a, b) => (b.transaction_date || b.created_at).localeCompare(a.transaction_date || a.created_at))),
+        () => db.transactions.where('goal_id').equals(id).toArray().then(normalizeRows)
+            .then(rows => rows.sort((a, b) => (b.transaction_date || b.created_at || '').localeCompare(a.transaction_date || a.created_at || ''))),
         [id]
     );
 

@@ -12,6 +12,7 @@ const Login = lazy(() => import('./components/Auth/Login'));
 const Signup = lazy(() => import('./components/Auth/Signup'));
 const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
 const MoneyPage = lazy(() => import('./components/Money/MoneyPage'));
+const SalaryPage = lazy(() => import('./components/Salary/SalaryPage'));
 const BudgetDashboard = lazy(() => import('./components/Budget/BudgetDashboard'));
 const GoalsPage = lazy(() => import('./components/Goals/GoalsPage'));
 const CreateGoal = lazy(() => import('./components/Goals/CreateGoal'));
@@ -76,6 +77,7 @@ function App() {
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                         <Route path="/" element={<Suspense fallback={<Spinner />}><Dashboard /></Suspense>} />
                         <Route path="/money" element={<Suspense fallback={<Spinner />}><MoneyPage /></Suspense>} />
+                        <Route path="/salary" element={<Suspense fallback={<Spinner />}><SalaryPage /></Suspense>} />
                         <Route path="/budget" element={<Suspense fallback={<Spinner />}><BudgetDashboard /></Suspense>} />
                         <Route path="/goals" element={<Suspense fallback={<Spinner />}><GoalsPage /></Suspense>} />
                         <Route path="/goals/new" element={<Suspense fallback={<Spinner />}><CreateGoal /></Suspense>} />

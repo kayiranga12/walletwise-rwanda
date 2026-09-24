@@ -75,7 +75,8 @@
         "reports": "Raporo",
         "settings": "Igenamiterere",
         "more": "Ibindi",
-        "add": "Ongeraho"
+        "add": "Ongeraho",
+        "salary": "Umushahara"
     },
     "sync": {
         "synced": "Byose byabitswe kuri cloud",
@@ -128,7 +129,10 @@
         "insights": "Inama z'ubwenge",
         "noInsights": "Andika ayinjiye n'ayasohotse kugira ngo ubone inama.",
         "budgetSnapshot": "Ingengo y'imari y'uku kwezi",
-        "yourGoals": "Intego zawe"
+        "yourGoals": "Intego zawe",
+        "afterBills": "{{amount}} nyuma yo kwishyura",
+        "paydayTitle": "Wahembwe! 🎉",
+        "paydayBody": "Zigama {{amount}} mu ntego zawe mbere yo gutangira gukoresha."
     },
     "money": {
         "title": "Amafaranga",
@@ -209,7 +213,17 @@
         "splitTotal": "Byose hamwe: {{total}}%",
         "splitSaved": "Igabanya ry'ingengo ryahinduwe",
         "nearToast": "Menya ko: {{bucket}} irenze 80% y'ingengo y'uku kwezi.",
-        "overToast": "{{bucket}} yarenze ingengo y'uku kwezi."
+        "overToast": "{{bucket}} yarenze ingengo y'uku kwezi.",
+        "limits": "Imbibi zo gukoresha",
+        "limitsHint": "Shyiraho imbibi ku byiciro nk'urugendo cyangwa ama-inite, umenyeshwe mbere yo kurenza.",
+        "noLimits": "Nta mbibi urashyiraho.",
+        "addLimit": "Ongeraho imbibi",
+        "limitTitle": "Imbibi zo gukoresha",
+        "limitHint": "Uzamenyeshwa ugeze kuri 80% n'igihe urenze imbibi.",
+        "limitPerMonth": "Imbibi ku kwezi (RWF)",
+        "removeLimit": "Kuraho",
+        "limitOverToast": "Warenze imbibi za {{category}} uku kwezi.",
+        "limitNearToast": "{{category}} irenze 80% by'imbibi zayo z'ukwezi."
     },
     "goals": {
         "title": "Intego",
@@ -256,7 +270,17 @@
         "milestoneBody": "{{name}}: {{percent}}% byabitswe.",
         "keepGoing": "Komeza",
         "statusBehind": "Uri inyuma",
-        "statusOnTrack": "Mu nzira nziza · {{date}}"
+        "statusOnTrack": "Mu nzira nziza · {{date}}",
+        "autoSave": "Zigama buri gihe uhembwe (RWF)",
+        "autoSaveHint": "Aya mafaranga azajya asabwa ku ipaji y'Umushahara buri kwezi. Siga ubusa ukoreshe ayo itariki ntarengwa isaba.",
+        "emergencyFlag": "Iki ni ikigega cyanjye cy'ingoboka",
+        "emergencyFlagHint": "Amafaranga y'ibitunguranye nk'uburwayi cyangwa kubura akazi – si ay'ibyateganyijwe.",
+        "emergencyName": "Ikigega cy'ingoboka",
+        "emergencyTitle": "Ikigega cy'ingoboka",
+        "emergencyCovered": "{{amount}} yabitswe – ihagije amezi {{months}} y'iby'ingenzi.",
+        "emergencyRecommend": "Intego: {{amount}} – amezi {{months}} y'ibyo ukoresha by'ingenzi.",
+        "emergencyNoData": "Andika ibyo ukoresha by'ingenzi mu kwezi kumwe tuzakugira inama y'intego.",
+        "emergencyStart": "Tangira ikigega cy'ingoboka"
     },
     "pets": {
         "lion": "Intare",
@@ -338,7 +362,9 @@
         "topExpenses": "Ayasohotse menshi",
         "goalProgress": "Aho intego zigeze",
         "empty": "Nta kintu cyanditswe muri uku kwezi.",
-        "printHint": "Mu idirishya ryo gucapa, hitamo \"Save as PDF\"."
+        "printHint": "Mu idirishya ryo gucapa, hitamo \"Save as PDF\".",
+        "trend": "Amezi 6 ashize",
+        "saved": "Ayazigamwe"
     },
     "insights": {
         "overBudget": "Warengeje ingengo ya {{bucket}} ho {{amount}} uku kwezi.",
@@ -353,7 +379,12 @@
         "goalBehind": "\"{{name}}\" ikeneye {{amount}} buri kwezi kugira ngo irangire ku gihe.",
         "goalEta": "\"{{name}}\" iri mu nzira nziza – izarangira nko ku ya {{date}}.",
         "alerts": "Imenyesha",
-        "noAlerts": "Nta menyesha. Uri gukora neza!"
+        "noAlerts": "Nta menyesha. Uri gukora neza!",
+        "limitOver": "Warenze imbibi za {{category}} ho {{amount}} uku kwezi.",
+        "limitNear": "{{category}} igeze kuri {{percent}}% y'imbibi zayo z'ukwezi.",
+        "safeAfterBills": "Nyuma yo kwishyura ibiri imbere, ushobora gukoresha nka {{amount}} ku munsi.",
+        "billsShort": "Ibyo ugomba kwishyura birenze ayo usigaranye uku kwezi ho {{amount}}.",
+        "noEmergencyFund": "Nta kigega cy'ingoboka urafungura. Gitangire ku ipaji y'Intego – intego ni amezi 3 y'iby'ingenzi."
     },
     "profile": {
         "settings": "Igenamiterere",
@@ -370,5 +401,45 @@
         "dataHint": "Kuramo kopi y'ibyo wanditse byose.",
         "backup": "Kuramo kopi (JSON)",
         "cloudSync": "Guhuza na cloud"
+    },
+    "salary": {
+        "title": "Umushahara n'umunsi wo guhembwa",
+        "subtitle": "Tegura buri faranga ry'umushahara wawe ukimara kuwubona.",
+        "paydayToast": "Wahembwe! Fungura Umushahara uwutegure kandi ubanze uzigamire intego zawe.",
+        "noSalary": "Nta mushahara urandika uku kwezi. Wandike kugira ngo ubone gahunda yo guhembwa.",
+        "receivedIn": "Umushahara wakiriwe muri {{month}}",
+        "usedSoFar": "Hakoreshejwe {{amount}}",
+        "payYourselfFirst": "Banza wiyishyure",
+        "payYourselfFirstHint": "Shyira amafaranga mu ntego zawe ukimara guhembwa – mbere yo gutangira gukoresha.",
+        "noGoalPlan": "Nta ntego ifite amafaranga yo kuzigama buri kwezi.",
+        "yourAmount": "Amafaranga wahisemo buri kwezi",
+        "suggested": "Ayasabwa kugira ngo ugere ku ntego ku gihe",
+        "done": "Byabitswe",
+        "overSavings": "Gahunda y'intego zawe irenze ingengo yo kuzigama ya {{amount}}.",
+        "saveNow": "Zigama {{amount}} mu ntego ubu",
+        "allSaved": "Intego zose zabonye umugabane wazo uku kwezi. Ni byiza!",
+        "savedToGoals": "{{amount}} yazigamiwe intego zawe",
+        "upcomingBills": "Ibyo kwishyura biri imbere",
+        "noBills": "Nta byo kwishyura bisubirwamo bisigaye uku kwezi. Ongeraho ubukode, amafaranga y'ishuri cyangwa ikimina mu Bisubirwamo.",
+        "dueOn": "Byishyurwa ku itariki ya {{day}}",
+        "billsTotal": "Ibisigaye kwishyura uku kwezi",
+        "afterBills": "Asigaye nyuma yo kwishyura",
+        "calculator": "Kubara umushahara usigarana",
+        "calculatorHint": "Andika umushahara mbumbe wa buri kwezi urebe PAYE, RSSB n'ayo usigarana.",
+        "gross": "Umushahara mbumbe wa buri kwezi (RWF)",
+        "paye": "PAYE (umusoro ku musaruro)",
+        "pension": "Ubwiteganyirize bwa RSSB",
+        "maternity": "Ikiruhuko cyo kubyara",
+        "cbhi": "Mituweli (CBHI)",
+        "net": "Umushahara usigarana",
+        "estimateNote": "Igereranya ku mukozi usanzwe: PAYE 0% kugeza 60,000, 10% kugeza 100,000, 20% kugeza 200,000, 30% hejuru yaho. Ibindi bigenerwa n'ibisonerwa ntibirimo.",
+        "payday": "Umunsi wo guhembwa",
+        "useAsSalary": "Bishyire nk'umushahara wanjye wa buri kwezi",
+        "ruleExists": "Umushahara wawe wa {{amount}} wongerwaho byikora ku itariki ya {{day}} buri kwezi."
+    },
+    "errors": {
+        "title": "Habaye ikibazo kuri iyi paji",
+        "body": "Amakuru yawe abitswe neza kuri iki gikoresho. Ongera ufungure, cyangwa usubire ahabanza. Niba bikomeje, twoherereze ubutumwa buri hepfo.",
+        "reload": "Ongera ufungure"
     }
 }

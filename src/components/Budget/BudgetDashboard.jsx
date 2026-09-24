@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { SlidersHorizontal, Plus } from 'lucide-react';
+import { SlidersHorizontal, Plus, Gauge } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { useUserTable, useSettings } from '../../lib/hooks';
 import { summarizeMonth } from '../../lib/insights';
 import { BUCKETS, EXPENSE_CATEGORIES, getExpenseCategory } from '../../lib/categories';
-import { createRecord, updateRecord } from '../../lib/repo';
+import { saveSettings } from '../../lib/settings';
 import { monthKey, formatMoney } from '../../lib/format';
 import MonthPicker from '../ui/MonthPicker';
 import Modal from '../ui/Modal';
@@ -15,14 +15,12 @@ import { PageHeader, Spinner, ProgressBar, CategoryIcon } from '../ui/bits';
 const SplitEditor = ({ open, onClose, split }) => {
     const { t } = useTranslation();
     const { user, toast } = useStore();
-    const { raw } = useSettings();
     const [values, setValues] = useState(split);
     const total = BUCKETS.reduce((s, b) => s + (Number(values[b.id]) || 0), 0);
 
     const save = async () => {
         const next = Object.fromEntries(BUCKETS.map(b => [b.id, Number(values[b.id]) || 0]));
-        if (raw) await updateRecord('settings', user.id, { split: next });
-        else await createRecord('settings', user.id, { split: next }, user.id);
+        await saveSettings(user.id, { split: next });
         toast(t('budget.splitSaved'));
         onClose();
     };
@@ -52,12 +50,98 @@ const SplitEditor = ({ open, onClose, split }) => {
     );
 };
 
+const LimitEditor = ({ limits, initial, onClose }) => {
+    const { t } = useTranslation();
+    const { user, toast } = useStore();
+    const [category, setCategory] = useState(initial || EXPENSE_CATEGORIES.find(c => !limits[c.id])?.id || 'food');
+    const [amount, setAmount] = useState(limits[initial] ? String(limits[initial]) : '');
+
+    const save = async (value) => {
+        const next = { ...limits };
+        if (value > 0) next[category] = value; else delete next[category];
+        await saveSettings(user.id, { category_limits: next });
+        toast(t('common.saved'));
+        onClose();
+    };
+
+    return (
+        <Modal open onClose={onClose} title={t('budget.limitTitle')} size="sm">
+            <form onSubmit={(e) => { e.preventDefault(); save(Number(amount)); }} className="space-y-4">
+                <p className="muted text-sm">{t('budget.limitHint')}</p>
+                <div>
+                    <label className="label" htmlFor="limit-cat">{t('common.category')}</label>
+                    <select id="limit-cat" className="input" value={category} disabled={!!initial}
+                        onChange={e => { setCategory(e.target.value); setAmount(limits[e.target.value] ? String(limits[e.target.value]) : ''); }}>
+                        {EXPENSE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{t(`categories.${c.id}`)}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label className="label" htmlFor="limit-amount">{t('budget.limitPerMonth')}</label>
+                    <input id="limit-amount" type="number" inputMode="numeric" min="1" required className="input font-semibold"
+                        value={amount} onChange={e => setAmount(e.target.value)} autoFocus />
+                </div>
+                <div className="flex gap-3">
+                    {limits[category] > 0 && (
+                        <button type="button" className="btn-ghost text-red-500" onClick={() => save(0)}>{t('budget.removeLimit')}</button>
+                    )}
+                    <button type="button" className="btn-secondary flex-1" onClick={onClose}>{t('common.cancel')}</button>
+                    <button type="submit" className="btn-primary flex-1">{t('common.save')}</button>
+                </div>
+            </form>
+        </Modal>
+    );
+};
+
+const LimitsCard = ({ summary, limits }) => {
+    const { t } = useTranslation();
+    const [editing, setEditing] = useState(null); // null | 'new' | categoryId
+    const entries = Object.entries(limits).filter(([, v]) => v > 0);
+
+    return (
+        <div className="card-pad">
+            <div className="flex items-center justify-between gap-3 mb-1">
+                <h3 className="section-title flex items-center gap-2"><Gauge className="w-5 h-5 text-primary" /> {t('budget.limits')}</h3>
+                <button className="btn-secondary py-1.5" onClick={() => setEditing('new')}><Plus className="w-4 h-4" /> {t('budget.addLimit')}</button>
+            </div>
+            <p className="muted text-sm mb-4">{t('budget.limitsHint')}</p>
+            {entries.length === 0 ? (
+                <p className="muted text-sm">{t('budget.noLimits')}</p>
+            ) : (
+                <div className="space-y-4">
+                    {entries.map(([id, limit]) => {
+                        const cat = getExpenseCategory(id);
+                        const spent = summary.byCategory[id] || 0;
+                        const ratio = spent / limit;
+                        const color = ratio >= 1 ? '#ef4444' : ratio >= 0.8 ? '#f59e0b' : cat.color;
+                        return (
+                            <button key={id} onClick={() => setEditing(id)} className="w-full text-left flex items-center gap-3">
+                                <CategoryIcon icon={cat.icon} color={cat.color} size="sm" />
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between text-sm mb-1">
+                                        <span className="truncate font-medium">{t(`categories.${id}`)}</span>
+                                        <span className={ratio >= 1 ? 'text-red-600 font-semibold' : 'muted'}>{formatMoney(spent)} / {formatMoney(limit)}</span>
+                                    </div>
+                                    <ProgressBar value={ratio} color={color} />
+                                    <p className={`text-xs mt-1 ${ratio >= 1 ? 'text-red-600' : 'muted'}`}>
+                                        {ratio >= 1 ? t('budget.over', { amount: formatMoney(spent - limit) }) : t('budget.remaining', { amount: formatMoney(limit - spent) })}
+                                    </p>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+            {editing && <LimitEditor limits={limits} initial={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
+        </div>
+    );
+};
+
 const BudgetDashboard = () => {
     const { t } = useTranslation();
     const openQuickAdd = useStore(s => s.openQuickAdd);
     const incomes = useUserTable('incomes');
     const expenses = useUserTable('expenses');
-    const { split } = useSettings();
+    const { split, limits } = useSettings();
     const [month, setMonth] = useState(monthKey());
     const [editing, setEditing] = useState(false);
 
@@ -176,6 +260,8 @@ const BudgetDashboard = () => {
                     )}
                 </div>
             </div>
+
+            <LimitsCard summary={summary} limits={limits} />
 
             {editing && <SplitEditor open onClose={() => setEditing(false)} split={split} />}
         </div>

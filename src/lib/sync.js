@@ -2,6 +2,7 @@ import { db } from './db';
 import { dbRemote } from './firebase';
 import { doc, setDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { setChangeListener } from './repo';
+import { normalizeRow } from './normalize';
 import useStore from '../store/useStore';
 
 // Local Dexie table -> Firestore collection
@@ -105,7 +106,7 @@ export const pullChanges = async (uid) => {
         snapshot.forEach(d => {
             remoteIds.add(d.id);
             if (pendingKeys.has(`${table}/${d.id}`)) return;
-            const remote = { ...d.data(), id: d.id };
+            const remote = normalizeRow({ ...d.data(), id: d.id }, { labels: false });
             const mine = localById.get(d.id);
             if (!mine || (remote.updated_at || '') >= (mine.updated_at || '')) puts.push(remote);
         });

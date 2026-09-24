@@ -63,7 +63,8 @@ const useStore = create((set, get) => ({
         // Listen to Firebase auth state changes
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const token = await user.getIdToken();
+                // A failed token refresh (e.g. offline) must not leave the app on the loader forever
+                const token = await user.getIdToken().catch(() => null);
                 const mappedUser = {
                     id: user.uid,
                     email: user.email,

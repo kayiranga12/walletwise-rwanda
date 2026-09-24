@@ -38,7 +38,7 @@ export const summarizeMonth = (month, { incomes = [], expenses = [], split = DEF
 
 // Plain-language observations about a month, most urgent first.
 // Each: { id, level: 'danger'|'warning'|'good'|'info', key, params }
-export const buildInsights = ({ month, incomes, expenses, goals = [], goalTransactions = [], split, today = new Date() }) => {
+export const buildInsights = ({ month, incomes, expenses, goals = [], goalTransactions = [], split, limits = {}, bills = [], today = new Date() }) => {
     const out = [];
     const cur = summarizeMonth(month, { incomes, expenses, split });
     const prev = summarizeMonth(shiftMonth(month, -1), { incomes, expenses, split });
@@ -54,6 +54,17 @@ export const buildInsights = ({ month, incomes, expenses, goals = [], goalTransa
         }
     }
 
+    // Spending limits the user set on individual categories
+    for (const [category, limit] of Object.entries(limits)) {
+        if (!(limit > 0)) continue;
+        const spent = cur.byCategory[category] || 0;
+        if (spent >= limit) {
+            out.push({ id: `limit-over-${category}`, level: 'danger', key: 'insights.limitOver', params: { category, amount: spent - limit } });
+        } else if (spent >= limit * 0.8) {
+            out.push({ id: `limit-near-${category}`, level: 'warning', key: 'insights.limitNear', params: { category, percent: Math.round((spent / limit) * 100) } });
+        }
+    }
+
     if (isCurrent && cur.income > 0) {
         const daysInMonth = daysInMonthKey(month);
         const day = today.getDate();
@@ -66,8 +77,13 @@ export const buildInsights = ({ month, incomes, expenses, goals = [], goalTransa
                 out.push({ id: 'projected', level: 'warning', key: 'insights.projectedOverspend', params: { amount: projected } });
             }
         }
-        if (cur.left > 0) {
-            out.push({ id: 'safe', level: 'info', key: 'insights.safeToSpend', params: { amount: cur.left / daysLeft } });
+        // Bills still due this month are already spoken for
+        const billsDue = bills.reduce((s, b) => s + Number(b.amount), 0);
+        const free = cur.left - billsDue;
+        if (free > 0) {
+            out.push({ id: 'safe', level: 'info', key: billsDue > 0 ? 'insights.safeAfterBills' : 'insights.safeToSpend', params: { amount: free / daysLeft } });
+        } else if (billsDue > 0 && cur.left > 0) {
+            out.push({ id: 'bills-short', level: 'danger', key: 'insights.billsShort', params: { amount: billsDue - cur.left } });
         }
     }
 
@@ -103,8 +119,22 @@ export const buildInsights = ({ month, incomes, expenses, goals = [], goalTransa
         }
     }
 
+    if (isCurrent && cur.income > 0 && !goals.some(g => g.is_emergency)) {
+        out.push({ id: 'no-emergency', level: 'info', key: 'insights.noEmergencyFund', params: {} });
+    }
+
     const rank = { danger: 0, warning: 1, good: 2, info: 3 };
     return out.sort((a, b) => rank[a.level] - rank[b.level]);
+};
+
+// Whether a new expense pushes a category past its limit (80% / 100%)
+export const limitCrossing = (summaryBefore, category, amount, limits = {}) => {
+    const limit = limits[category];
+    if (!(limit > 0)) return null;
+    const before = summaryBefore.byCategory[category] || 0;
+    if (before < limit && before + amount >= limit) return 'over';
+    if (before < limit * 0.8 && before + amount >= limit * 0.8) return 'near';
+    return null;
 };
 
 // Which budget thresholds (80% / 100%) a new expense pushes a bucket across

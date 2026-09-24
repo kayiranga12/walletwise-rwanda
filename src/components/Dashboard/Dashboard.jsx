@@ -1,9 +1,12 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownLeft, ArrowUpRight, Wallet, PiggyBank, Plus, Minus, ChevronRight, Sparkles, Activity } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, PiggyBank, Plus, Minus, ChevronRight, Sparkles, Activity, PartyPopper } from 'lucide-react';
 import useStore from '../../store/useStore';
-import { useUserTable, useSettings } from '../../lib/hooks';
+import { useUserTable, useSettings, useUpcomingBills } from '../../lib/hooks';
+import { plannedContribution, paidThisPayday } from '../../lib/goals';
+import { salaryForMonth } from '../../lib/salary';
+import UpcomingBills from '../Salary/UpcomingBills';
 import { summarizeMonth, buildInsights } from '../../lib/insights';
 import { BUCKETS } from '../../lib/categories';
 import { monthKey, formatMoney, entryMonth, entryDay, daysInMonthKey } from '../../lib/format';
@@ -35,13 +38,18 @@ const Dashboard = () => {
     const expenses = useUserTable('expenses');
     const goals = useUserTable('goals');
     const goalTransactions = useUserTable('transactions');
-    const { split } = useSettings();
+    const { split, limits } = useSettings();
+    const bills = useUpcomingBills();
     const month = monthKey();
 
     const data = useMemo(() => {
         if (!incomes || !expenses || !goals || !goalTransactions) return null;
         const summary = summarizeMonth(month, { incomes, expenses, split });
-        const insights = buildInsights({ month, incomes, expenses, goals, goalTransactions, split });
+        const insights = buildInsights({ month, incomes, expenses, goals, goalTransactions, split, limits, bills });
+        const salary = salaryForMonth(incomes, month);
+        const paydayToSave = goals
+            .filter(g => !paidThisPayday(g, goalTransactions, month))
+            .reduce((s, g) => s + plannedContribution(g), 0);
         const savedToGoals = goalTransactions
             .filter(tx => entryMonth(tx) === month)
             .reduce((s, tx) => s + (tx.type === 'deposit' ? tx.amount : -tx.amount), 0);
@@ -51,11 +59,13 @@ const Dashboard = () => {
         ]
             .sort((a, b) => entryDay(b).localeCompare(entryDay(a)) || (b.created_at || '').localeCompare(a.created_at || ''))
             .slice(0, 6);
-        return { summary, insights, savedToGoals, recent };
-    }, [incomes, expenses, goals, goalTransactions, month, split]);
+        return { summary, insights, savedToGoals, recent, salary, paydayToSave };
+    }, [incomes, expenses, goals, goalTransactions, month, split, limits, bills]);
 
     if (!data) return <Spinner />;
-    const { summary, insights, savedToGoals, recent } = data;
+    const { summary, insights, savedToGoals, recent, salary, paydayToSave } = data;
+    const billsDue = bills.reduce((s, b) => s + b.amount, 0);
+    const free = summary.left - billsDue;
 
     const daysLeft = daysInMonthKey(month) - new Date().getDate() + 1;
     const activeGoals = goals.filter(g => !g.is_completed)
@@ -79,13 +89,26 @@ const Dashboard = () => {
                 </div>
             </div>
 
+            {salary > 0 && paydayToSave > 0 && (
+                <Link to="/salary" className="flex items-center gap-4 rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-md hover:shadow-lg transition">
+                    <PartyPopper className="w-8 h-8 shrink-0" />
+                    <div className="flex-1">
+                        <p className="font-semibold">{t('dashboard.paydayTitle')}</p>
+                        <p className="text-sm text-emerald-50">{t('dashboard.paydayBody', { amount: formatMoney(paydayToSave) })}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5" />
+                </Link>
+            )}
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <StatCard icon={ArrowDownLeft} label={t('dashboard.income')} value={formatMoney(summary.income)}
                     tone="bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400" />
                 <StatCard icon={ArrowUpRight} label={t('dashboard.spent')} value={formatMoney(summary.spent)}
                     tone="bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400" />
                 <StatCard icon={Wallet} label={t('dashboard.left')} value={formatMoney(summary.left)}
-                    hint={summary.left > 0 ? t('dashboard.perDay', { amount: formatMoney(summary.left / daysLeft) }) : null}
+                    hint={billsDue > 0
+                        ? t('dashboard.afterBills', { amount: formatMoney(free) })
+                        : summary.left > 0 ? t('dashboard.perDay', { amount: formatMoney(summary.left / daysLeft) }) : null}
                     tone="bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400" />
                 <StatCard icon={PiggyBank} label={t('dashboard.savedThisMonth')} value={formatMoney(savedToGoals)}
                     tone="bg-primary/10 text-primary" />
@@ -122,6 +145,8 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {bills.length > 0 && <UpcomingBills bills={bills} left={summary.left} compact />}
 
             <div>
                 <div className="flex items-center justify-between mb-3">

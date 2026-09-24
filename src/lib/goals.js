@@ -11,7 +11,7 @@ export const goalProgress = (goal) =>
 // Records a deposit or withdrawal against a goal. Deposits can also be counted
 // as "Savings" spending in the month's 50/30/20 budget.
 // Returns the milestone (25/50/75/100) newly crossed, if any.
-export const addGoalTransaction = async (goal, { type, amount, note, date, countInBudget }) => {
+export const addGoalTransaction = async (goal, { type, amount, note, date, countInBudget, payday = null }) => {
     const before = goal.current_amount || 0;
     const after = type === 'deposit' ? before + amount : before - amount;
     if (after < 0) throw new Error('insufficient');
@@ -28,6 +28,7 @@ export const addGoalTransaction = async (goal, { type, amount, note, date, count
     await createRecord('transactions', goal.user_id, {
         goal_id: goal.id, amount, type, note: note || '',
         transaction_date: date || todayISO(), expense_id: expenseId,
+        ...(payday ? { payday } : {}),
     });
 
     const completed = after >= goal.target_amount;
@@ -82,6 +83,33 @@ export const deleteGoalDepositExpense = async (expense) => {
     const goal = expense.goal_id ? await db.goals.get(expense.goal_id) : null;
     if (tx && goal) await deleteGoalTransaction(goal, tx);
     else await deleteRecord('expenses', expense.id);
+};
+
+// "Pay yourself first": the amount a goal should get each payday
+export const plannedContribution = (goal, today = new Date()) => {
+    if (goal.is_completed) return 0;
+    const remaining = Math.max(goal.target_amount - (goal.current_amount || 0), 0);
+    const planned = goal.monthly_contribution ?? requiredPerMonth(goal, today) ?? 0;
+    return Math.min(Math.round(planned), remaining);
+};
+
+export const paidThisPayday = (goal, transactions, month) =>
+    transactions.some(t => t.goal_id === goal.id && t.payday === month && t.type === 'deposit');
+
+// Deposits each goal's planned contribution for `month`, once per goal per month.
+// Returns the milestones crossed as [{ goal, milestone }].
+export const runPayday = async (goals, transactions, month) => {
+    const crossed = [];
+    for (const goal of goals) {
+        const amount = plannedContribution(goal);
+        if (amount <= 0 || paidThisPayday(goal, transactions, month)) continue;
+        const fresh = await db.goals.get(goal.id);
+        const milestone = await addGoalTransaction(fresh, {
+            type: 'deposit', amount, note: '', countInBudget: true, payday: month,
+        });
+        if (milestone) crossed.push({ goal: fresh, milestone });
+    }
+    return crossed;
 };
 
 export const deleteGoal = async (goal) => {

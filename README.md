@@ -5,6 +5,9 @@ A personal finance app for Rwanda: budget with the 50/30/20 rule, save toward go
 ## Features
 
 - **Money** – every income and expense in one list, with a month picker, search, filters (category, MTN MoMo / Airtel Money / cash / bank / card) and CSV export. Tap an entry to edit or delete it.
+- **Salary & Payday** – a payday plan that splits your salary into Needs/Wants/Savings and, with one tap, saves each goal's monthly share first ("pay yourself first"). Also shows bills still due this month and has a net salary calculator (PAYE, RSSB pension, maternity, mutuelle).
+- **Spending limits** – optional monthly caps per category (e.g. transport, airtime) with warnings at 80% and 100%.
+- **Emergency fund** – a suggested target of 3 months of essential spending, and how many months your fund already covers.
 - **Budget** – a monthly 50/30/20 split (adjustable) with per-category breakdowns. You get a warning as soon as Needs or Wants passes 80% and again at 100%.
 - **Goals** – savings goals with a pet avatar, a forecast of when you'll reach them, the monthly amount needed to hit the deadline, and celebrations at 25/50/75/100%. Deposits can count as Savings in the monthly budget.
 - **Smart insights** – plain-language tips: safe amount to spend per day, projected overspending, month-over-month changes, top category, goals falling behind.

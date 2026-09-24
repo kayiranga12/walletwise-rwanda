@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Printer, Download } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import useStore from '../../store/useStore';
 import { useUserTable, useSettings } from '../../lib/hooks';
 import { summarizeMonth, buildInsights } from '../../lib/insights';
 import { BUCKETS, getExpenseCategory, getPet, getGoalColor } from '../../lib/categories';
 import { goalProgress } from '../../lib/goals';
-import { monthKey, formatMonth, formatMoney, formatPercent, formatDate, entryDay } from '../../lib/format';
+import { monthKey, formatMonth, formatMoney, formatPercent, formatDate, entryDay, shiftMonth, formatCompact } from '../../lib/format';
 import { toCSV, downloadFile } from '../../lib/csv';
 import MonthPicker from '../ui/MonthPicker';
 import { PageHeader, Spinner, ProgressBar, InsightItem } from '../ui/bits';
@@ -25,7 +26,7 @@ const ReportsPage = () => {
     const expenses = useUserTable('expenses');
     const goals = useUserTable('goals');
     const goalTransactions = useUserTable('transactions');
-    const { split } = useSettings();
+    const { split, limits } = useSettings();
     const [month, setMonth] = useState(monthKey());
 
     const report = useMemo(() => {
@@ -33,12 +34,18 @@ const ReportsPage = () => {
         const s = summarizeMonth(month, { incomes, expenses, split });
         const categories = Object.entries(s.byCategory).sort((a, b) => b[1] - a[1]);
         const top = [...s.expenses].sort((a, b) => b.amount - a.amount).slice(0, 5);
-        const insights = buildInsights({ month, incomes, expenses, goals, goalTransactions, split }).filter(i => i.id !== 'safe');
-        return { s, categories, top, insights };
-    }, [incomes, expenses, goals, goalTransactions, month, split]);
+        const insights = buildInsights({ month, incomes, expenses, goals, goalTransactions, split, limits }).filter(i => i.id !== 'safe');
+        // The six months up to the selected one
+        const trend = Array.from({ length: 6 }, (_, i) => {
+            const m = shiftMonth(month, i - 5);
+            const ms = summarizeMonth(m, { incomes, expenses, split });
+            return { label: formatMonth(m, { short: true }).split(' ')[0], income: ms.income, spent: ms.consumption, saved: ms.saved };
+        });
+        return { s, categories, top, insights, trend };
+    }, [incomes, expenses, goals, goalTransactions, month, split, limits]);
 
     if (!report) return <Spinner />;
-    const { s, categories, top, insights } = report;
+    const { s, categories, top, insights, trend } = report;
     const empty = s.incomes.length === 0 && s.expenses.length === 0;
 
     const exportCsv = () => {
@@ -115,6 +122,24 @@ const ReportsPage = () => {
                                     })}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    <div className="card-pad">
+                        <h2 className="section-title mb-4">{t('reports.trend')}</h2>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={trend} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#9ca3af33" />
+                                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} tickFormatter={formatCompact} width={44} />
+                                    <Tooltip formatter={(v) => formatMoney(v)} cursor={{ fill: '#9ca3af1a' }} contentStyle={{ borderRadius: 12, border: 'none' }} />
+                                    <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                                    <Bar dataKey="income" name={t('dashboard.income')} fill="#10b981" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="spent" name={t('dashboard.spent')} fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="saved" name={t('reports.saved')} fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
 

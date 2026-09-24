@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams, Navigate } from 'react-router-dom';
+import { useNavigate, useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { db } from '../../lib/db';
+import { normalizeRow } from '../../lib/normalize';
 import { createRecord, updateRecord } from '../../lib/repo';
 import { requiredPerMonth } from '../../lib/goals';
 import { GOAL_COLORS } from '../../lib/categories';
@@ -12,17 +13,19 @@ import useStore from '../../store/useStore';
 import PetSelector from './PetSelector';
 import { Spinner } from '../ui/bits';
 
-const GoalForm = ({ goal }) => {
+const GoalForm = ({ goal, preset }) => {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { user, toast } = useStore();
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
-        name: goal?.name || '',
-        target_amount: goal ? String(goal.target_amount) : '',
+        name: goal?.name || preset?.name || '',
+        target_amount: goal ? String(goal.target_amount) : (preset?.target ? String(Math.round(preset.target)) : ''),
         deadline: goal?.deadline || '',
-        pet_avatar: goal?.pet_avatar || 'lion',
-        color_theme: goal?.color_theme || 'purple',
+        pet_avatar: goal?.pet_avatar || (preset ? 'turtle' : 'lion'),
+        color_theme: goal?.color_theme || (preset ? 'cyan' : 'purple'),
+        monthly_contribution: goal?.monthly_contribution != null ? String(goal.monthly_contribution) : '',
+        is_emergency: goal?.is_emergency || !!preset,
     });
 
     const set = (patch) => setFormData(f => ({ ...f, ...patch }));
@@ -41,6 +44,8 @@ const GoalForm = ({ goal }) => {
             deadline: formData.deadline || null,
             pet_avatar: formData.pet_avatar,
             color_theme: formData.color_theme,
+            monthly_contribution: formData.monthly_contribution === '' ? null : Number(formData.monthly_contribution),
+            is_emergency: formData.is_emergency,
         };
 
         try {
@@ -93,6 +98,22 @@ const GoalForm = ({ goal }) => {
                 )}
 
                 <div>
+                    <label className="label" htmlFor="goal-auto">{t('goals.autoSave')} <span className="muted font-normal">({t('common.optional')})</span></label>
+                    <input id="goal-auto" type="number" inputMode="numeric" min="0"
+                        placeholder={perMonth > 0 ? String(Math.round(perMonth)) : '20000'}
+                        value={formData.monthly_contribution} onChange={(e) => set({ monthly_contribution: e.target.value })} className="input" />
+                    <p className="text-xs muted mt-1.5">{t('goals.autoSaveHint')}</p>
+                </div>
+
+                <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-3.5">
+                    <input type="checkbox" checked={formData.is_emergency} onChange={e => set({ is_emergency: e.target.checked })} className="mt-0.5 w-4 h-4 accent-primary" />
+                    <span>
+                        <span className="text-sm font-medium flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-cyan-500" /> {t('goals.emergencyFlag')}</span>
+                        <span className="block text-xs muted mt-0.5">{t('goals.emergencyFlagHint')}</span>
+                    </span>
+                </label>
+
+                <div>
                     <span className="label">{t('goals.colorTheme')}</span>
                     <div className="flex gap-4">
                         {GOAL_COLORS.map((color) => (
@@ -124,12 +145,19 @@ const GoalForm = ({ goal }) => {
 
 export const EditGoal = () => {
     const { id } = useParams();
-    const goal = useLiveQuery(() => db.goals.get(id), [id]);
+    const goal = useLiveQuery(() => db.goals.get(id).then(g => (g ? normalizeRow(g) : null)), [id]);
     if (goal === undefined) return <Spinner />;
     if (!goal) return <Navigate to="/goals" replace />;
     return <GoalForm goal={goal} />;
 };
 
-const CreateGoal = () => <GoalForm />;
+const CreateGoal = () => {
+    const [params] = useSearchParams();
+    const { t } = useTranslation();
+    const preset = params.get('type') === 'emergency'
+        ? { name: t('goals.emergencyName'), target: Number(params.get('target')) || 0 }
+        : null;
+    return <GoalForm preset={preset} />;
+};
 
 export default CreateGoal;

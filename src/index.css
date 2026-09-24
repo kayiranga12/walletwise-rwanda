@@ -4,6 +4,16 @@
 
 :root {
   --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color-scheme: light;
+}
+
+/* Native controls (date pickers, dropdown lists, scrollbars) follow the app theme */
+:root.dark {
+  color-scheme: dark;
+}
+
+select option {
+  @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100;
 }
 
 body {

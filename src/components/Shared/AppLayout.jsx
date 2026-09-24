@@ -1,22 +1,24 @@
 import React, { useState, useMemo } from 'react';
-import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     LayoutDashboard, ArrowLeftRight, Target, PieChart, Scale, Repeat, FileText, Settings,
-    LogOut, Plus, Bell, Ellipsis, Cloud, CloudOff, RefreshCw
+    LogOut, Plus, Bell, Ellipsis, Cloud, CloudOff, RefreshCw, Wallet
 } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { fullSync } from '../../lib/sync';
-import { useUserTable, useSettings } from '../../lib/hooks';
+import { useUserTable, useSettings, useUpcomingBills } from '../../lib/hooks';
 import { buildInsights } from '../../lib/insights';
 import { monthKey } from '../../lib/format';
 import EntrySheet from '../Money/EntrySheet';
 import Celebration from '../Goals/Celebration';
 import { InsightItem } from '../ui/bits';
+import ErrorBoundary from '../ui/ErrorBoundary';
 
 const NAV = [
     { to: '/', icon: LayoutDashboard, key: 'nav.home', end: true },
     { to: '/money', icon: ArrowLeftRight, key: 'nav.money' },
+    { to: '/salary', icon: Wallet, key: 'nav.salary' },
     { to: '/budget', icon: PieChart, key: 'nav.budget' },
     { to: '/goals', icon: Target, key: 'nav.goals' },
     { to: '/net-worth', icon: Scale, key: 'nav.netWorth' },
@@ -55,13 +57,14 @@ const AlertsBell = () => {
     const expenses = useUserTable('expenses');
     const goals = useUserTable('goals');
     const goalTransactions = useUserTable('transactions');
-    const { split } = useSettings();
+    const { split, limits } = useSettings();
+    const bills = useUpcomingBills();
 
     const alerts = useMemo(() => {
         if (!incomes || !expenses) return [];
-        return buildInsights({ month: monthKey(), incomes, expenses, goals: goals || [], goalTransactions: goalTransactions || [], split })
+        return buildInsights({ month: monthKey(), incomes, expenses, goals: goals || [], goalTransactions: goalTransactions || [], split, limits, bills })
             .filter(i => i.level === 'danger' || i.level === 'warning');
-    }, [incomes, expenses, goals, goalTransactions, split]);
+    }, [incomes, expenses, goals, goalTransactions, split, limits, bills]);
 
     return (
         <div className="relative">
@@ -98,6 +101,7 @@ const Logo = () => (
 const AppLayout = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
     const user = useStore(s => s.user);
     const logout = useStore(s => s.logout);
     const openQuickAdd = useStore(s => s.openQuickAdd);
@@ -154,14 +158,16 @@ const AppLayout = () => {
                     <div className="hidden lg:block" />
                     <div className="flex items-center gap-1">
                         <div className="lg:hidden"><SyncStatus compact /></div>
-                        <AlertsBell />
+                        <ErrorBoundary fallback={null} resetKey={location.pathname}><AlertsBell /></ErrorBoundary>
                         <Link to="/profile" className="lg:hidden ml-1 w-8 h-8 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center">{initial}</Link>
                     </div>
                 </div>
             </header>
 
             <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-10 print-area">
-                <Outlet />
+                <ErrorBoundary resetKey={location.pathname}>
+                    <Outlet />
+                </ErrorBoundary>
             </main>
 
             {/* Mobile bottom navigation */}

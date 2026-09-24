@@ -9,7 +9,7 @@ import { createRecord, updateRecord, deleteRecord } from '../../lib/repo';
 import { useUserTable, useSettings } from '../../lib/hooks';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, SOURCES, BUCKETS, getExpenseCategory } from '../../lib/categories';
 import { todayISO, entryDay } from '../../lib/format';
-import { summarizeMonth, budgetCrossing } from '../../lib/insights';
+import { summarizeMonth, budgetCrossing, limitCrossing } from '../../lib/insights';
 import { updateGoalDepositExpense, deleteGoalDepositExpense } from '../../lib/goals';
 
 const blank = (kind) => ({
@@ -31,7 +31,7 @@ const EntrySheet = () => {
     const user = useStore(s => s.user);
     const incomes = useUserTable('incomes');
     const expenses = useUserTable('expenses');
-    const { split } = useSettings();
+    const { split, limits } = useSettings();
 
     const editing = quickAdd?.entry || null;
     const [kind, setKind] = useState('expense');
@@ -110,6 +110,15 @@ const EntrySheet = () => {
                 if (crossing) {
                     toast(t(crossing === 'over' ? 'budget.overToast' : 'budget.nearToast', { bucket: t(`buckets.${form.bucket}`) }),
                         crossing === 'over' ? 'error' : 'warning');
+                }
+                const limitHit = before && limitCrossing(before, form.category, amount, limits);
+                if (limitHit) {
+                    toast(t(limitHit === 'over' ? 'budget.limitOverToast' : 'budget.limitNearToast', { category: t(`categories.${form.category}`) }),
+                        limitHit === 'over' ? 'error' : 'warning');
+                }
+                // Salary just arrived: nudge towards the payday plan
+                if (kind === 'income' && form.category === 'salary') {
+                    toast(t('salary.paydayToast'), 'info');
                 }
             }
             close();
