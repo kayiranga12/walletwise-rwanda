@@ -1,6 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+const LANGUAGES = [
+    { id: 'rw', label: 'Kinyarwanda' },
+    { id: 'en', label: 'English' },
+];
+
 const LanguageToggle = () => {
     const { i18n } = useTranslation();
 
@@ -10,25 +15,18 @@ const LanguageToggle = () => {
     };
 
     return (
-        <div className="flex border border-gray-300 rounded-md overflow-hidden">
-            <button
-                onClick={() => changeLanguage('en')}
-                className={`px-4 py-2 text-sm font-medium ${i18n.language === 'en'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-            >
-                English
-            </button>
-            <button
-                onClick={() => changeLanguage('rw')}
-                className={`px-4 py-2 text-sm font-medium ${i18n.language === 'rw'
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-            >
-                Kinyarwanda
-            </button>
+        <div className="grid grid-cols-2 gap-2">
+            {LANGUAGES.map(({ id, label }) => (
+                <button
+                    key={id}
+                    onClick={() => changeLanguage(id)}
+                    className={`rounded-xl border-2 py-3 text-sm font-medium transition ${i18n.language === id
+                        ? 'border-primary text-primary bg-primary/5'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                >
+                    {label}
+                </button>
+            ))}
         </div>
     );
 };

@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { auth } from '../../lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
+import useStore from '../../store/useStore';
+import AuthShell from './AuthShell';
+import { authErrorKey } from '../../lib/authErrors';
 
 const Signup = () => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
@@ -19,67 +24,47 @@ const Signup = () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             if (userCredential.user) {
-                await updateProfile(userCredential.user, {
-                    displayName: username
-                });
+                await updateProfile(userCredential.user, { displayName: username.trim() });
+                // The auth listener fired before the name was set; refresh it
+                const { user, setUser } = useStore.getState();
+                if (user) setUser({ ...user, user_metadata: { ...user.user_metadata, username: username.trim() } });
                 navigate('/');
             }
         } catch (err) {
-            setError(err.message);
+            setError(t(authErrorKey(err.code)));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-                <h2 className="text-2xl font-bold text-center text-primary mb-6">Join WalletWise</h2>
-                {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{error}</div>}
-                <form onSubmit={handleSignup} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Username</label>
-                        <input
-                            type="text"
-                            required
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
-                    >
-                        {loading ? 'Signing up...' : 'Sign Up'}
-                    </button>
-                </form>
-                <div className="mt-4 text-center text-sm text-gray-600">
-                    Already have an account? <Link to="/login" className="text-secondary hover:text-orange-600 font-medium">Log in</Link>
+        <AuthShell title={t('auth.join')}>
+            {error && <div className="bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300 p-3 rounded-xl mb-4 text-sm">{error}</div>}
+            <form onSubmit={handleSignup} className="space-y-4">
+                <div>
+                    <label className="label" htmlFor="signup-name">{t('auth.username')}</label>
+                    <input id="signup-name" type="text" required maxLength={40} autoComplete="name" value={username}
+                        onChange={(e) => setUsername(e.target.value)} className="input" />
                 </div>
-            </div>
-        </div>
+                <div>
+                    <label className="label" htmlFor="signup-email">{t('auth.email')}</label>
+                    <input id="signup-email" type="email" required autoComplete="email" value={email}
+                        onChange={(e) => setEmail(e.target.value)} className="input" />
+                </div>
+                <div>
+                    <label className="label" htmlFor="signup-password">{t('auth.password')}</label>
+                    <input id="signup-password" type="password" required minLength={6} autoComplete="new-password" value={password}
+                        onChange={(e) => setPassword(e.target.value)} className="input" />
+                    <p className="text-xs muted mt-1">{t('auth.passwordHint')}</p>
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary w-full">
+                    {loading ? t('auth.signingUp') : t('auth.signup')}
+                </button>
+            </form>
+            <p className="mt-5 text-center text-sm muted">
+                {t('auth.haveAccount')} <Link to="/login" className="text-primary font-semibold">{t('auth.login')}</Link>
+            </p>
+        </AuthShell>
     );
 };
 

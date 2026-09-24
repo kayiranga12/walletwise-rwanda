@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { auth } from '../../lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
+import AuthShell from './AuthShell';
+import { authErrorKey } from '../../lib/authErrors';
 
 const Login = () => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [notice, setNotice] = useState(null);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setNotice(null);
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -21,51 +27,53 @@ const Login = () => {
                 navigate('/');
             }
         } catch (err) {
-            setError(err.message);
+            setError(t(authErrorKey(err.code)));
         } finally {
             setLoading(false);
         }
     };
 
+    const handleReset = async () => {
+        setError(null);
+        setNotice(null);
+        if (!email) {
+            setError(t('auth.enterEmailFirst'));
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            setNotice(t('auth.resetSent'));
+        } catch (err) {
+            setError(t(authErrorKey(err.code)));
+        }
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-                <h2 className="text-2xl font-bold text-center text-primary mb-6">Welcome Back</h2>
-                {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{error}</div>}
-                <form onSubmit={handleLogin} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
-                    >
-                        {loading ? 'Logging in...' : 'Login'}
-                    </button>
-                </form>
-                <div className="mt-4 text-center text-sm text-gray-600">
-                    Don't have an account? <Link to="/signup" className="text-secondary hover:text-orange-600 font-medium">Sign up</Link>
+        <AuthShell title={t('auth.welcomeBack')}>
+            {error && <div className="bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300 p-3 rounded-xl mb-4 text-sm">{error}</div>}
+            {notice && <div className="bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 p-3 rounded-xl mb-4 text-sm">{notice}</div>}
+            <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                    <label className="label" htmlFor="login-email">{t('auth.email')}</label>
+                    <input id="login-email" type="email" required autoComplete="email" value={email}
+                        onChange={(e) => setEmail(e.target.value)} className="input" />
                 </div>
-            </div>
-        </div>
+                <div>
+                    <div className="flex justify-between items-center">
+                        <label className="label" htmlFor="login-password">{t('auth.password')}</label>
+                        <button type="button" onClick={handleReset} className="text-xs text-primary font-medium mb-1.5">{t('auth.forgot')}</button>
+                    </div>
+                    <input id="login-password" type="password" required autoComplete="current-password" value={password}
+                        onChange={(e) => setPassword(e.target.value)} className="input" />
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary w-full">
+                    {loading ? t('auth.loggingIn') : t('auth.login')}
+                </button>
+            </form>
+            <p className="mt-5 text-center text-sm muted">
+                {t('auth.noAccount')} <Link to="/signup" className="text-primary font-semibold">{t('auth.signup')}</Link>
+            </p>
+        </AuthShell>
     );
 };
 

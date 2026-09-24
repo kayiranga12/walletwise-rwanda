@@ -8,18 +8,57 @@
 
 body {
   font-family: var(--font-family);
-  background-color: #f9fafb; /* Light Gray background */
-  color: #1f2937; /* Dark Gray text */
+  @apply bg-gray-50 text-gray-800 dark:bg-gray-950 dark:text-gray-100 antialiased;
 }
 
-/* Custom Utilities for Animations */
-@keyframes grow {
-  0% { transform: scale(0.8); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.animate-grow {
-  animation: grow 0.5s ease-out forwards;
+/* Shared building blocks so every screen looks the same in light and dark mode */
+@layer components {
+  .card {
+    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm;
+  }
+  .card-pad {
+    @apply card p-5 sm:p-6;
+  }
+  .input {
+    @apply block w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950
+      px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400
+      focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition;
+  }
+  .label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+      transition disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-orange-600 shadow-sm;
+  }
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700;
+  }
+  .btn-danger {
+    @apply btn bg-red-500 text-white hover:bg-red-600;
+  }
+  .btn-ghost {
+    @apply btn text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800;
+  }
+  .page-title {
+    @apply text-2xl font-bold text-gray-900 dark:text-white;
+  }
+  .section-title {
+    @apply text-lg font-semibold text-gray-900 dark:text-white;
+  }
+  .muted {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition
+      border-gray-200 text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300;
+  }
+  .chip-active {
+    @apply border-primary bg-primary/10 text-primary dark:border-primary dark:text-primary;
+  }
 }
 
 .pet-avatar {
@@ -28,4 +67,22 @@ body {
 
 .pet-avatar:hover {
   transform: scale(1.1);
+}
+
+/* The monthly report prints (and saves as PDF) without the app chrome */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print-area {
+    padding: 0 !important;
+  }
+  .card {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
 }

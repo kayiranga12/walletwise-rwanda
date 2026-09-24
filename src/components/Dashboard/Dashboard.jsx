@@ -1,94 +1,152 @@
-import React, { useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../../lib/db';
+import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowDownLeft, ArrowUpRight, Wallet, PiggyBank, Plus, Minus, ChevronRight, Sparkles, Activity } from 'lucide-react';
 import useStore from '../../store/useStore';
-import StatsOverview from './StatsOverview';
+import { useUserTable, useSettings } from '../../lib/hooks';
+import { summarizeMonth, buildInsights } from '../../lib/insights';
+import { BUCKETS } from '../../lib/categories';
+import { monthKey, formatMoney, entryMonth, entryDay, daysInMonthKey } from '../../lib/format';
 import GoalCard, { AddGoalCard } from './GoalCard';
-import RecentActivity from './RecentActivity';
-import BudgetDashboard from '../Budget/BudgetDashboard';
-import NetWorthDashboard from '../NetWorth/NetWorthDashboard';
+import EntryRow from '../Money/EntryRow';
+import { Spinner, ProgressBar, InsightItem, EmptyState } from '../ui/bits';
+
+const greetingKey = () => {
+    const h = new Date().getHours();
+    return h < 12 ? 'greeting.morning' : h < 17 ? 'greeting.afternoon' : 'greeting.evening';
+};
+
+const StatCard = ({ icon: Icon, label, value, hint, tone }) => (
+    <div className="card p-4 sm:p-5">
+        <div className="flex items-center gap-2 mb-2">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${tone}`}><Icon className="w-4 h-4" /></div>
+            <p className="text-xs sm:text-sm muted font-medium">{label}</p>
+        </div>
+        <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+        {hint && <p className="text-xs muted mt-0.5">{hint}</p>}
+    </div>
+);
 
 const Dashboard = () => {
-    const { user } = useStore();
-    const [activeTab, setActiveTab] = useState('overview');
+    const { t } = useTranslation();
+    const user = useStore(s => s.user);
+    const openQuickAdd = useStore(s => s.openQuickAdd);
+    const incomes = useUserTable('incomes');
+    const expenses = useUserTable('expenses');
+    const goals = useUserTable('goals');
+    const goalTransactions = useUserTable('transactions');
+    const { split } = useSettings();
+    const month = monthKey();
 
-    // Fetch Goals from Dexie (reactive)
-    const goals = useLiveQuery(
-        () => db.goals.where('user_id').equals(user?.id || '').toArray(),
-        [user?.id]
-    );
+    const data = useMemo(() => {
+        if (!incomes || !expenses || !goals || !goalTransactions) return null;
+        const summary = summarizeMonth(month, { incomes, expenses, split });
+        const insights = buildInsights({ month, incomes, expenses, goals, goalTransactions, split });
+        const savedToGoals = goalTransactions
+            .filter(tx => entryMonth(tx) === month)
+            .reduce((s, tx) => s + (tx.type === 'deposit' ? tx.amount : -tx.amount), 0);
+        const recent = [
+            ...incomes.map(e => ({ ...e, kind: 'income' })),
+            ...expenses.map(e => ({ ...e, kind: 'expense' })),
+        ]
+            .sort((a, b) => entryDay(b).localeCompare(entryDay(a)) || (b.created_at || '').localeCompare(a.created_at || ''))
+            .slice(0, 6);
+        return { summary, insights, savedToGoals, recent };
+    }, [incomes, expenses, goals, goalTransactions, month, split]);
 
-    // Fetch Recent Transactions
-    const transactions = useLiveQuery(async () => {
-        if (!user?.id) return [];
-        // Join transactions with goals to get goal names
-        // This is a bit complex in Dexie without relational support, so we do it manually or assume standard fetch
-        // For prototype: fetch all transactions for user's goals
-        const userGoals = await db.goals.where('user_id').equals(user.id).keys();
-        if (userGoals.length === 0) return [];
-        const txs = await db.transactions.where('goal_id').anyOf(userGoals).reverse().limit(5).toArray();
+    if (!data) return <Spinner />;
+    const { summary, insights, savedToGoals, recent } = data;
 
-        // Enrich with goal name
-        const enrichedTxs = await Promise.all(txs.map(async (tx) => {
-            const goal = await db.goals.get(tx.goal_id);
-            return { ...tx, goalName: goal?.name };
-        }));
-
-        return enrichedTxs;
-    }, [user?.id]);
-
-    if (!goals) return <div>Loading dashboard...</div>;
-
-    const totalSavings = goals.reduce((acc, goal) => acc + (goal.current_amount || 0), 0);
-    const activeGoalsCount = goals.filter(g => !g.is_completed).length;
+    const daysLeft = daysInMonthKey(month) - new Date().getDate() + 1;
+    const activeGoals = goals.filter(g => !g.is_completed)
+        .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
+        .slice(0, 3);
 
     return (
-        <div className="py-6 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="space-y-6 animate-fade-in-up">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Mwaramutse, {user?.user_metadata?.username || 'Saver'}! 👋
-                    </h1>
-                    <p className="text-gray-500">Here's what's happening with your finances.</p>
+                    <h1 className="page-title">{t(greetingKey())}, {user?.user_metadata?.username || 'Saver'}! 👋</h1>
+                    <p className="muted mt-1">{t('dashboard.subtitle')}</p>
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={() => openQuickAdd('income')} className="btn-secondary flex-1 sm:flex-none">
+                        <Plus className="w-4 h-4 text-emerald-500" /> {t('dashboard.addIncome')}
+                    </button>
+                    <button onClick={() => openQuickAdd('expense')} className="btn-primary flex-1 sm:flex-none">
+                        <Minus className="w-4 h-4" /> {t('dashboard.addExpense')}
+                    </button>
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex space-x-6 border-b border-gray-200">
-                <button 
-                    onClick={() => setActiveTab('overview')}
-                    className={`pb-3 px-1 font-medium text-sm transition-colors border-b-2 ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                >Overview</button>
-                <button 
-                    onClick={() => setActiveTab('budget')}
-                    className={`pb-3 px-1 font-medium text-sm transition-colors border-b-2 ${activeTab === 'budget' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                >50/30/20 Budget</button>
-                <button 
-                    onClick={() => setActiveTab('networth')}
-                    className={`pb-3 px-1 font-medium text-sm transition-colors border-b-2 ${activeTab === 'networth' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                >Net Worth Tracking</button>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <StatCard icon={ArrowDownLeft} label={t('dashboard.income')} value={formatMoney(summary.income)}
+                    tone="bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400" />
+                <StatCard icon={ArrowUpRight} label={t('dashboard.spent')} value={formatMoney(summary.spent)}
+                    tone="bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400" />
+                <StatCard icon={Wallet} label={t('dashboard.left')} value={formatMoney(summary.left)}
+                    hint={summary.left > 0 ? t('dashboard.perDay', { amount: formatMoney(summary.left / daysLeft) }) : null}
+                    tone="bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400" />
+                <StatCard icon={PiggyBank} label={t('dashboard.savedThisMonth')} value={formatMoney(savedToGoals)}
+                    tone="bg-primary/10 text-primary" />
             </div>
 
-            {activeTab === 'overview' && (
-                <div className="space-y-6 animate-fade-in-up">
-                    <StatsOverview totalSavings={totalSavings} activeGoalsCount={activeGoalsCount} />
+            <div className="grid lg:grid-cols-5 gap-6">
+                <div className="lg:col-span-3 card-pad">
+                    <h2 className="section-title flex items-center gap-2 mb-4"><Sparkles className="w-5 h-5 text-primary" /> {t('dashboard.insights')}</h2>
+                    {insights.length === 0
+                        ? <p className="muted text-sm">{t('dashboard.noInsights')}</p>
+                        : <div className="space-y-2">{insights.slice(0, 4).map(i => <InsightItem key={i.id} insight={i} />)}</div>}
+                </div>
 
-                    <div>
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Your Goals</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <AddGoalCard />
-                            {goals.map(goal => (
-                                <GoalCard key={goal.id} goal={goal} />
-                            ))}
-                        </div>
+                <div className="lg:col-span-2 card-pad">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="section-title">{t('dashboard.budgetSnapshot')}</h2>
+                        <Link to="/budget" className="text-sm text-primary font-medium flex items-center">{t('common.viewAll')} <ChevronRight className="w-4 h-4" /></Link>
                     </div>
-
-                    <RecentActivity transactions={transactions} />
+                    <div className="space-y-4">
+                        {BUCKETS.map(b => {
+                            const { spent, allocated, ratio } = summary.buckets[b.id];
+                            return (
+                                <div key={b.id}>
+                                    <div className="flex justify-between text-sm mb-1.5">
+                                        <span className="font-medium">{t(`buckets.${b.id}`)}</span>
+                                        <span className={`${ratio > 1 ? 'text-red-600 font-semibold' : 'muted'}`}>
+                                            {formatMoney(spent)} <span className="text-xs">/ {formatMoney(allocated)}</span>
+                                        </span>
+                                    </div>
+                                    <ProgressBar value={ratio} color={ratio > 1 ? '#ef4444' : b.color} />
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
-            )}
+            </div>
 
-            {activeTab === 'budget' && <BudgetDashboard />}
-            {activeTab === 'networth' && <NetWorthDashboard />}
+            <div>
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="section-title">{t('dashboard.yourGoals')}</h2>
+                    <Link to="/goals" className="text-sm text-primary font-medium flex items-center">{t('common.viewAll')} <ChevronRight className="w-4 h-4" /></Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {activeGoals.map(goal => <GoalCard key={goal.id} goal={goal} transactions={goalTransactions} />)}
+                    {activeGoals.length < 3 && <AddGoalCard />}
+                </div>
+            </div>
+
+            <div className="card overflow-hidden">
+                <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                    <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
+                    <Link to="/money" className="text-sm text-primary font-medium flex items-center">{t('common.viewAll')} <ChevronRight className="w-4 h-4" /></Link>
+                </div>
+                {recent.length === 0
+                    ? <EmptyState icon={Activity} text={t('dashboard.noActivity')} />
+                    : (
+                        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                            {recent.map(e => <EntryRow key={e.id} entry={e} kind={e.kind} onClick={() => openQuickAdd(e.kind, e)} />)}
+                        </div>
+                    )}
+            </div>
         </div>
     );
 };

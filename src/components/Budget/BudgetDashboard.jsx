@@ -1,232 +1,183 @@
-import React, { useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../../lib/db';
+import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { SlidersHorizontal, Plus } from 'lucide-react';
 import useStore from '../../store/useStore';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { v4 as uuidv4 } from 'uuid';
-import { PlusCircle, Wallet, ShoppingBag, PiggyBank } from 'lucide-react';
+import { useUserTable, useSettings } from '../../lib/hooks';
+import { summarizeMonth } from '../../lib/insights';
+import { BUCKETS, EXPENSE_CATEGORIES, getExpenseCategory } from '../../lib/categories';
+import { createRecord, updateRecord } from '../../lib/repo';
+import { monthKey, formatMoney } from '../../lib/format';
+import MonthPicker from '../ui/MonthPicker';
+import Modal from '../ui/Modal';
+import { PageHeader, Spinner, ProgressBar, CategoryIcon } from '../ui/bits';
 
-const COLORS = ['#ef4444', '#f59e0b', '#10b981']; // Red for Needs, Yellow for Wants, Green for Savings
-const CATEGORIES = [
-    { id: 'Needs', label: 'Needs (50%)', icon: Wallet, color: 'text-red-500', bg: 'bg-red-100' },
-    { id: 'Wants', label: 'Wants (30%)', icon: ShoppingBag, color: 'text-yellow-500', bg: 'bg-yellow-100' },
-    { id: 'Savings', label: 'Savings/Debt (20%)', icon: PiggyBank, color: 'text-green-500', bg: 'bg-green-100' }
-];
+const SplitEditor = ({ open, onClose, split }) => {
+    const { t } = useTranslation();
+    const { user, toast } = useStore();
+    const { raw } = useSettings();
+    const [values, setValues] = useState(split);
+    const total = BUCKETS.reduce((s, b) => s + (Number(values[b.id]) || 0), 0);
 
-const BudgetDashboard = () => {
-    const { user } = useStore();
-    const [incomeData, setIncomeData] = useState({ amount: '' });
-    const [expenseData, setExpenseData] = useState({ amount: '', category: 'Needs', description: '' });
-
-    // Fetch incomes and expenses for the current user
-    const incomes = useLiveQuery(
-        () => db.incomes.where('user_id').equals(user?.id || '').toArray(),
-        [user?.id]
-    ) || [];
-
-    const expenses = useLiveQuery(
-        () => db.expenses.where('user_id').equals(user?.id || '').toArray(),
-        [user?.id]
-    ) || [];
-
-    const totalIncome = incomes.reduce((sum, item) => sum + Number(item.amount), 0);
-    
-    // Allocations based on 50/30/20 rule
-    const allocated = {
-        Needs: totalIncome * 0.5,
-        Wants: totalIncome * 0.3,
-        Savings: totalIncome * 0.2
+    const save = async () => {
+        const next = Object.fromEntries(BUCKETS.map(b => [b.id, Number(values[b.id]) || 0]));
+        if (raw) await updateRecord('settings', user.id, { split: next });
+        else await createRecord('settings', user.id, { split: next }, user.id);
+        toast(t('budget.splitSaved'));
+        onClose();
     };
-
-    // Calculate spent per category
-    const spent = { Needs: 0, Wants: 0, Savings: 0 };
-    expenses.forEach(ex => {
-        if (spent[ex.category] !== undefined) {
-            spent[ex.category] += Number(ex.amount);
-        }
-    });
-
-    const handleAddIncome = async (e) => {
-        e.preventDefault();
-        if (!incomeData.amount || Number(incomeData.amount) <= 0) return;
-        
-        await db.incomes.add({
-            id: uuidv4(),
-            user_id: user.id,
-            amount: Number(incomeData.amount),
-            date: new Date().toISOString(),
-            synced: true,
-            created_at: new Date().toISOString()
-        });
-        setIncomeData({ amount: '' });
-    };
-
-    const handleAddExpense = async (e) => {
-        e.preventDefault();
-        if (!expenseData.amount || Number(expenseData.amount) <= 0) return;
-
-        await db.expenses.add({
-            id: uuidv4(),
-            user_id: user.id,
-            amount: Number(expenseData.amount),
-            category: expenseData.category,
-            description: expenseData.description,
-            date: new Date().toISOString(),
-            synced: true,
-            created_at: new Date().toISOString()
-        });
-        setExpenseData({ ...expenseData, amount: '', description: '' });
-    };
-
-    const pieData = [
-        { name: 'Needs Spent', value: spent.Needs },
-        { name: 'Wants Spent', value: spent.Wants },
-        { name: 'Savings Spent', value: spent.Savings }
-    ].filter(d => d.value > 0);
 
     return (
-        <div className="space-y-8 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row justify-between items-center bg-indigo-600 p-6 rounded-2xl shadow-lg text-white">
+        <Modal open={open} onClose={onClose} title={t('budget.splitTitle')} size="sm">
+            <p className="muted text-sm mb-5">{t('budget.splitHint')}</p>
+            <div className="space-y-5">
+                {BUCKETS.map(b => (
+                    <div key={b.id}>
+                        <div className="flex justify-between text-sm font-medium mb-1.5">
+                            <span>{t(`buckets.${b.id}`)}</span>
+                            <span style={{ color: b.color }}>{values[b.id]}%</span>
+                        </div>
+                        <input type="range" min="0" max="100" step="5" value={values[b.id]}
+                            onChange={e => setValues(v => ({ ...v, [b.id]: Number(e.target.value) }))}
+                            className="w-full" style={{ accentColor: b.color }} aria-label={t(`buckets.${b.id}`)} />
+                    </div>
+                ))}
+            </div>
+            <p className={`text-sm font-semibold mt-5 ${total === 100 ? 'text-emerald-600' : 'text-red-500'}`}>{t('budget.splitTotal', { total })}</p>
+            <div className="flex gap-3 mt-5">
+                <button className="btn-secondary flex-1" onClick={() => setValues({ Needs: 50, Wants: 30, Savings: 20 })}>50/30/20</button>
+                <button className="btn-primary flex-1" disabled={total !== 100} onClick={save}>{t('common.save')}</button>
+            </div>
+        </Modal>
+    );
+};
+
+const BudgetDashboard = () => {
+    const { t } = useTranslation();
+    const openQuickAdd = useStore(s => s.openQuickAdd);
+    const incomes = useUserTable('incomes');
+    const expenses = useUserTable('expenses');
+    const { split } = useSettings();
+    const [month, setMonth] = useState(monthKey());
+    const [editing, setEditing] = useState(false);
+
+    const summary = useMemo(
+        () => (incomes && expenses ? summarizeMonth(month, { incomes, expenses, split }) : null),
+        [incomes, expenses, month, split]
+    );
+
+    if (!summary) return <Spinner />;
+
+    const splitLabel = BUCKETS.map(b => split[b.id]).join('/');
+    const pieData = BUCKETS.map(b => ({ name: t(`buckets.${b.id}`), value: summary.buckets[b.id].spent, color: b.color })).filter(d => d.value > 0);
+
+    return (
+        <div className="space-y-6 animate-fade-in-up">
+            <PageHeader title={t('budget.title')} subtitle={t('budget.subtitle', { split: splitLabel })}>
+                <MonthPicker value={month} onChange={setMonth} />
+                <button className="btn-secondary" onClick={() => setEditing(true)}><SlidersHorizontal className="w-4 h-4" /> {t('budget.customize')}</button>
+            </PageHeader>
+
+            <div className="rounded-2xl p-6 text-white bg-gradient-to-br from-indigo-600 to-violet-700 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold">50/30/20 Budgeting</h2>
-                    <p className="text-indigo-200">Automatically guide your finances.</p>
+                    <p className="text-sm text-indigo-200 uppercase tracking-wide">{t('budget.totalIncome')}</p>
+                    <p className="text-3xl font-bold mt-1">{formatMoney(summary.income)}</p>
                 </div>
-                <div className="mt-4 md:mt-0 text-right">
-                    <p className="text-sm text-indigo-200 uppercase tracking-wide">Total Income</p>
-                    <p className="text-3xl font-bold">{totalIncome.toLocaleString()} RWF</p>
+                <div className="flex gap-6 text-sm">
+                    <div><p className="text-indigo-200">{t('dashboard.spent')}</p><p className="font-bold text-lg">{formatMoney(summary.spent)}</p></div>
+                    <div><p className="text-indigo-200">{t('dashboard.left')}</p><p className="font-bold text-lg">{formatMoney(summary.left)}</p></div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Forms Section */}
-                <div className="space-y-6">
-                    {/* Add Income Form */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <PlusCircle className="w-5 h-5 text-indigo-600" />
-                            Add Income
-                        </h3>
-                        <form onSubmit={handleAddIncome} className="flex gap-4">
-                            <input
-                                type="number"
-                                placeholder="Amount (RWF)"
-                                value={incomeData.amount}
-                                onChange={(e) => setIncomeData({ amount: e.target.value })}
-                                className="flex-1 w-full rounded-lg border-gray-300 border px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                required
-                            />
-                            <button type="submit" className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition shadow-md">
-                                Add
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Add Expense Form */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <PlusCircle className="w-5 h-5 text-rose-500" />
-                            Add Expense
-                        </h3>
-                        <form onSubmit={handleAddExpense} className="space-y-4">
-                            <div className="flex flex-col gap-4 sm:flex-row">
-                                <input
-                                    type="number"
-                                    placeholder="Amount (RWF)"
-                                    value={expenseData.amount}
-                                    onChange={(e) => setExpenseData({ ...expenseData, amount: e.target.value })}
-                                    className="flex-1 rounded-lg border-gray-300 border px-4 py-2 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all"
-                                    required
-                                />
-                                <select 
-                                    value={expenseData.category}
-                                    onChange={(e) => setExpenseData({ ...expenseData, category: e.target.value })}
-                                    className="flex-1 rounded-lg border-gray-300 border px-4 py-2 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none bg-white transition-all"
-                                >
-                                    <option value="Needs">Needs (50%)</option>
-                                    <option value="Wants">Wants (30%)</option>
-                                    <option value="Savings">Savings (20%)</option>
-                                </select>
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Description (e.g., Groceries)"
-                                value={expenseData.description}
-                                onChange={(e) => setExpenseData({ ...expenseData, description: e.target.value })}
-                                className="w-full rounded-lg border-gray-300 border px-4 py-2 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all"
-                                required
-                            />
-                            <button type="submit" className="w-full bg-rose-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-rose-600 transition shadow-md">
-                                Record Expense
-                            </button>
-                        </form>
-                    </div>
+            {summary.income === 0 && (
+                <div className="card-pad flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <p className="muted text-sm">{t('budget.noIncome')}</p>
+                    <button className="btn-primary" onClick={() => openQuickAdd('income')}><Plus className="w-4 h-4" /> {t('money.addIncome')}</button>
                 </div>
+            )}
 
-                {/* Dashboard & Chart Section */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Budget Breakdown</h3>
-                    
-                    <div className="h-48 w-full mb-6 relative">
-                        {pieData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
-                                        {pieData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[CATEGORIES.findIndex(c => c.id === entry.name.split(' ')[0])]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip formatter={(value) => `${value.toLocaleString()} RWF`} />
-                                    <Legend />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                                No expenses yet. Start tracking!
-                            </div>
-                        )}
-                    </div>
+            <div className="grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-4">
+                    {BUCKETS.map(b => {
+                        const { spent, allocated, ratio } = summary.buckets[b.id];
+                        const over = allocated > 0 && spent > allocated;
+                        const cats = EXPENSE_CATEGORIES
+                            .map(c => ({ ...c, total: summary.expenses.filter(e => e.bucket === b.id && e.category === c.id).reduce((s, e) => s + Number(e.amount), 0) }))
+                            .filter(c => c.total > 0)
+                            .sort((a, z) => z.total - a.total);
 
-                    <div className="space-y-4 flex-1">
-                        {CATEGORIES.map(cat => {
-                            const { id, label, icon: Icon, color, bg } = cat;
-                            const budgetLimit = allocated[id] || 0;
-                            const currentSpent = spent[id] || 0;
-                            const percentSpent = budgetLimit > 0 ? Math.min((currentSpent / budgetLimit) * 100, 100) : 0;
-                            const isOverBudget = currentSpent > budgetLimit && budgetLimit > 0;
-
-                            return (
-                                <div key={id} className={`p-4 rounded-xl border ${isOverBudget ? 'border-red-300 bg-red-50' : 'border-gray-50' } shadow-sm hover:shadow-md transition-all`}>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-2 rounded-lg ${bg} ${color}`}>
-                                                <Icon className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-gray-900">{label}</p>
-                                                <p className="text-xs text-gray-500">Budget: {budgetLimit.toLocaleString()} RWF</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className={`font-bold ${isOverBudget ? 'text-red-600' : 'text-gray-900'}`}>{currentSpent.toLocaleString()} RWF</p>
-                                            <p className="text-xs text-gray-500">Spent</p>
-                                        </div>
+                        return (
+                            <div key={b.id} className={`card-pad ${over ? 'ring-1 ring-red-300 dark:ring-red-500/40' : ''}`}>
+                                <div className="flex justify-between items-start gap-3 mb-3">
+                                    <div>
+                                        <p className="font-semibold flex items-center gap-2">
+                                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: b.color }} />
+                                            {t(`buckets.${b.id}`)} <span className="muted font-normal text-sm">{split[b.id]}%</span>
+                                        </p>
+                                        <p className="text-xs muted mt-0.5">{t(`buckets.${b.id}Hint`)}</p>
                                     </div>
-                                    {/* Progress Bar */}
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div 
-                                            className={`h-2 rounded-full ${isOverBudget ? 'bg-red-500' : cat.color.replace('text', 'bg')}`} 
-                                            style={{ width: `${percentSpent}%` }} 
-                                        />
+                                    <div className="text-right">
+                                        <p className={`font-bold ${over ? 'text-red-600' : ''}`}>{formatMoney(spent)}</p>
+                                        <p className="text-xs muted">{t('budget.budgetOf', { amount: formatMoney(allocated) })}</p>
                                     </div>
-                                    {isOverBudget && (
-                                        <p className="text-xs text-red-500 mt-2 font-medium bg-red-100 p-1 px-2 rounded-md inline-block">Over budget limits!</p>
-                                    )}
                                 </div>
-                            );
-                        })}
-                    </div>
+                                <ProgressBar value={ratio} color={over ? '#ef4444' : b.color} />
+                                <p className={`text-xs mt-2 font-medium ${over ? 'text-red-600' : 'muted'}`}>
+                                    {allocated > 0 && (over
+                                        ? `${t('budget.overBudget')} ${t('budget.over', { amount: formatMoney(spent - allocated) })}`
+                                        : t('budget.remaining', { amount: formatMoney(allocated - spent) }))}
+                                </p>
+                                {cats.length > 0 && (
+                                    <div className="mt-4 space-y-2.5">
+                                        {cats.map(c => (
+                                            <div key={c.id} className="flex items-center gap-3">
+                                                <CategoryIcon icon={getExpenseCategory(c.id).icon} color={c.color} size="sm" />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="truncate">{t(`categories.${c.id}`)}</span>
+                                                        <span className="font-medium">{formatMoney(c.total)}</span>
+                                                    </div>
+                                                    <ProgressBar value={spent > 0 ? c.total / spent : 0} color={c.color} className="h-1 mt-1" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="card-pad h-fit">
+                    <h3 className="section-title mb-4">{t('budget.breakdown')}</h3>
+                    {pieData.length > 0 ? (
+                        <>
+                            <div className="h-56">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie data={pieData} dataKey="value" innerRadius={60} outerRadius={90} paddingAngle={3} stroke="none">
+                                            {pieData.map((d) => <Cell key={d.name} fill={d.color} />)}
+                                        </Pie>
+                                        <Tooltip formatter={(v) => formatMoney(v)} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <div className="space-y-2 mt-2">
+                                {pieData.map(d => (
+                                    <div key={d.name} className="flex items-center justify-between text-sm">
+                                        <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />{d.name}</span>
+                                        <span className="font-medium">{Math.round((d.value / summary.spent) * 100)}%</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <p className="muted text-sm text-center py-16">{t('budget.noExpenses')}</p>
+                    )}
                 </div>
             </div>
+
+            {editing && <SplitEditor open onClose={() => setEditing(false)} split={split} />}
         </div>
     );
 };

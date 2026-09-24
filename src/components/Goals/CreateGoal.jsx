@@ -1,143 +1,135 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import { db, addToSyncQueue } from '../../lib/db';
+import { useNavigate, useParams, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { ArrowLeft } from 'lucide-react';
+import { db } from '../../lib/db';
+import { createRecord, updateRecord } from '../../lib/repo';
+import { requiredPerMonth } from '../../lib/goals';
+import { GOAL_COLORS } from '../../lib/categories';
+import { formatMoney, todayISO } from '../../lib/format';
 import useStore from '../../store/useStore';
 import PetSelector from './PetSelector';
+import { Spinner } from '../ui/bits';
 
-const COLORS = [
-    { id: 'purple', bg: 'bg-purple-500', hex: '#9C27B0' },
-    { id: 'pink', bg: 'bg-pink-500', hex: '#E91E63' },
-    { id: 'cyan', bg: 'bg-cyan-500', hex: '#00BCD4' },
-    { id: 'lemon', bg: 'bg-yellow-400', hex: '#FFEB3B' },
-    { id: 'deepOrange', bg: 'bg-orange-600', hex: '#FF5722' },
-];
-
-const CreateGoal = () => {
+const GoalForm = ({ goal }) => {
     const navigate = useNavigate();
-    const { user } = useStore();
+    const { t } = useTranslation();
+    const { user, toast } = useStore();
+    const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
-        name: '',
-        target_amount: '',
-        deadline: '',
-        pet_avatar: 'lion',
-        color_theme: 'purple',
+        name: goal?.name || '',
+        target_amount: goal ? String(goal.target_amount) : '',
+        deadline: goal?.deadline || '',
+        pet_avatar: goal?.pet_avatar || 'lion',
+        color_theme: goal?.color_theme || 'purple',
     });
+
+    const set = (patch) => setFormData(f => ({ ...f, ...patch }));
+    const target = parseFloat(formData.target_amount) || 0;
+    const perMonth = formData.deadline && target > 0
+        ? requiredPerMonth({ target_amount: target, current_amount: goal?.current_amount || 0, deadline: formData.deadline })
+        : null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!user) return;
-
-        const newGoal = {
-            id: uuidv4(),
-            user_id: user.id,
-            name: formData.name,
-            target_amount: parseFloat(formData.target_amount),
-            current_amount: 0,
+        if (!user || target <= 0) return;
+        setSaving(true);
+        const fields = {
+            name: formData.name.trim(),
+            target_amount: target,
             deadline: formData.deadline || null,
             pet_avatar: formData.pet_avatar,
             color_theme: formData.color_theme,
-            is_completed: false,
-            created_at: new Date().toISOString(),
-            synced: false
         };
 
         try {
-            // 1. Save to local Dexie DB
-            await db.goals.add(newGoal);
-
-            // 2. Queue for Sync
-            await addToSyncQueue('goals', 'INSERT', newGoal);
-
-            // 3. Navigate back to Dashboard
-            navigate('/');
+            if (goal) {
+                const completed = (goal.current_amount || 0) >= target;
+                await updateRecord('goals', goal.id, { ...fields, is_completed: completed, completed_at: completed ? (goal.completed_at || new Date().toISOString()) : null });
+                toast(t('common.saved'));
+                navigate(`/goals/${goal.id}`);
+            } else {
+                const created = await createRecord('goals', user.id, { ...fields, current_amount: 0, is_completed: false });
+                toast(t('goals.created'));
+                navigate(`/goals/${created.id}`);
+            }
         } catch (error) {
-            console.error('Failed to create goal:', error);
-            alert('Failed to create goal. Please try again.');
+            console.error('Failed to save goal:', error);
+            toast(t('common.somethingWrong'), 'error');
+            setSaving(false);
         }
     };
 
     return (
-        <div className="max-w-2xl mx-auto py-8 px-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Goal</h1>
+        <div className="max-w-2xl mx-auto">
+            <button onClick={() => navigate(-1)} className="btn-ghost -ml-3 mb-3"><ArrowLeft className="w-4 h-4" /> {t('common.back')}</button>
+            <h1 className="page-title mb-6">{goal ? t('goals.editGoal') : t('goals.createGoal')}</h1>
 
-            <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <form onSubmit={handleSubmit} className="card-pad space-y-7">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Goal Name</label>
-                    <input
-                        type="text"
-                        required
-                        placeholder="e.g., School Fees, Dream Bike"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                    />
+                    <label className="label" htmlFor="goal-name">{t('goals.goalName')}</label>
+                    <input id="goal-name" type="text" required maxLength={60} placeholder={t('goals.goalNamePlaceholder')}
+                        value={formData.name} onChange={(e) => set({ name: e.target.value })} className="input" />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Target Amount (RWF)</label>
-                    <input
-                        type="number"
-                        required
-                        min="1"
-                        placeholder="50000"
-                        value={formData.target_amount}
-                        onChange={(e) => setFormData({ ...formData, target_amount: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                    />
+                <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                        <label className="label" htmlFor="goal-target">{t('goals.targetAmount')}</label>
+                        <input id="goal-target" type="number" inputMode="numeric" required min="1" placeholder="50000"
+                            value={formData.target_amount} onChange={(e) => set({ target_amount: e.target.value })} className="input" />
+                    </div>
+                    <div>
+                        <label className="label" htmlFor="goal-deadline">{t('goals.deadline')} <span className="muted font-normal">({t('common.optional')})</span></label>
+                        <input id="goal-deadline" type="date" min={todayISO()} value={formData.deadline}
+                            onChange={(e) => set({ deadline: e.target.value })} className="input" />
+                    </div>
                 </div>
 
+                {perMonth > 0 && (
+                    <p className="text-sm rounded-xl bg-primary/10 text-primary px-4 py-3 font-medium">
+                        {t('goals.needPerMonth', { amount: formatMoney(perMonth) })}
+                    </p>
+                )}
+
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Pick a Color Theme</label>
-                    <div className="flex space-x-4">
-                        {COLORS.map((color) => (
+                    <span className="label">{t('goals.colorTheme')}</span>
+                    <div className="flex gap-4">
+                        {GOAL_COLORS.map((color) => (
                             <button
-                                key={color.id}
-                                type="button"
-                                onClick={() => setFormData({ ...formData, color_theme: color.id })}
-                                className={`w-10 h-10 rounded-full ${color.bg} ${formData.color_theme === color.id ? 'ring-4 ring-offset-2 ring-gray-300 scale-110' : ''
-                                    }`}
+                                key={color.id} type="button" aria-label={color.id}
+                                onClick={() => set({ color_theme: color.id })}
+                                className={`w-10 h-10 rounded-full transition ${formData.color_theme === color.id ? 'ring-4 ring-offset-2 ring-gray-300 dark:ring-gray-600 dark:ring-offset-gray-900 scale-110' : ''}`}
+                                style={{ backgroundColor: color.hex }}
                             />
                         ))}
                     </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Choose Your Pet Avatar</label>
-                    <PetSelector
-                        selectedPet={formData.pet_avatar}
-                        onSelect={(pet) => setFormData({ ...formData, pet_avatar: pet })}
-                    />
+                    <span className="label">{t('goals.choosePet')}</span>
+                    <PetSelector selectedPet={formData.pet_avatar} onSelect={(pet) => set({ pet_avatar: pet })} />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline (Optional)</label>
-                    <input
-                        type="date"
-                        value={formData.deadline}
-                        onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                    />
-                </div>
-
-                <div className="flex justify-end space-x-4 pt-4 border-t border-gray-100">
-                    <button
-                        type="button"
-                        onClick={() => navigate('/')}
-                        className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-md font-medium"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className="px-6 py-2 bg-primary text-white rounded-md font-bold shadow-md hover:bg-orange-600 transition-colors"
-                    >
-                        Create Goal
+                <div className="flex justify-end gap-3 pt-5 border-t border-gray-100 dark:border-gray-800">
+                    <button type="button" onClick={() => navigate(-1)} className="btn-ghost">{t('common.cancel')}</button>
+                    <button type="submit" disabled={saving} className="btn-primary px-6">
+                        {goal ? t('common.save') : t('goals.createGoal')}
                     </button>
                 </div>
             </form>
         </div>
     );
 };
+
+export const EditGoal = () => {
+    const { id } = useParams();
+    const goal = useLiveQuery(() => db.goals.get(id), [id]);
+    if (goal === undefined) return <Spinner />;
+    if (!goal) return <Navigate to="/goals" replace />;
+    return <GoalForm goal={goal} />;
+};
+
+const CreateGoal = () => <GoalForm />;
 
 export default CreateGoal;
