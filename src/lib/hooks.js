@@ -25,7 +25,8 @@ export const useUpcomingBills = () => {
 
 export const useSettings = () => {
     const uid = useStore(s => s.user?.id);
-    const row = useLiveQuery(() => (uid ? db.settings.get(uid) : null), [uid]);
+    // `null` (not undefined) when the user has no settings yet, so "loaded" can be told apart
+    const row = useLiveQuery(() => (uid ? db.settings.get(uid).then(r => r || null) : null), [uid]);
     return useMemo(() => {
         // Only trust a saved split that is complete and adds up to 100%
         const saved = row?.split;
@@ -38,6 +39,12 @@ export const useSettings = () => {
             const n = Number(v);
             if (n > 0) limits[k] = n;
         }
-        return { loaded: row !== undefined, split, limits, raw: row };
+        return {
+            loaded: row !== undefined, split, limits, raw: row,
+            wishlist: Array.isArray(row?.wishlist) ? row.wishlist : [],
+            commitments: row?.commitments || {},
+            challenges: Array.isArray(row?.challenges) ? row.challenges : [],
+            skippedTotal: Number(row?.skipped_total) || 0,
+        };
     }, [row]);
 };

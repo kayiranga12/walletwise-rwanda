@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Trash2, Target } from 'lucide-react';
+import { Trash2, Target, Hourglass, Briefcase, TriangleAlert } from 'lucide-react';
+import { deservesPause, purchaseImpact, WAIT_HOURS } from '../../lib/discipline';
+import { addToWishlist } from '../../lib/settings';
+import { formatMoney } from '../../lib/format';
 import Modal from '../ui/Modal';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import useStore from '../../store/useStore';
@@ -31,6 +34,8 @@ const EntrySheet = () => {
     const user = useStore(s => s.user);
     const incomes = useUserTable('incomes');
     const expenses = useUserTable('expenses');
+    const goals = useUserTable('goals');
+    const goalTransactions = useUserTable('transactions');
     const { split, limits } = useSettings();
 
     const editing = quickAdd?.entry || null;
@@ -63,6 +68,21 @@ const EntrySheet = () => {
     // A goal deposit's category is fixed; changing its amount also updates the goal
     const goalDeposit = !!editing?.goal_id;
     const categories = kind === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+    // Think before you buy: a pause for big "Wants" purchases
+    const pauseCheck = !editing && kind === 'expense' && !form.repeat
+        && deservesPause({ amount: Number(form.amount), bucket: form.bucket, incomes: incomes || [] })
+        ? purchaseImpact({ amount: Number(form.amount), incomes: incomes || [], goals: goals || [], transactions: goalTransactions || [] })
+        : null;
+
+    const waitFirst = async () => {
+        await addToWishlist(user.id, {
+            amount: Number(form.amount), category: form.category, bucket: form.bucket,
+            source: form.source, description: form.description.trim(),
+        });
+        toast(t('think.added', { amount: formatMoney(Number(form.amount)) }));
+        close();
+    };
 
     const pickCategory = (id) => {
         const patch = { category: id };
@@ -249,6 +269,23 @@ const EntrySheet = () => {
                                 <span className="block text-xs muted">{t('money.repeatHint')}</span>
                             </span>
                         </label>
+                    )}
+
+                    {pauseCheck && (
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 p-4 space-y-2 text-sm">
+                            <p className="font-semibold flex items-center gap-2 text-amber-800 dark:text-amber-300"><TriangleAlert className="w-4 h-4" /> {t('think.title')}</p>
+                            {pauseCheck.workDays !== null && (
+                                <p className="flex items-center gap-2"><Briefcase className="w-4 h-4 text-amber-600 shrink-0" />
+                                    {t('think.workDays', { days: pauseCheck.workDays < 1 ? pauseCheck.workDays.toFixed(1) : Math.round(pauseCheck.workDays) })}</p>
+                            )}
+                            {pauseCheck.goal && pauseCheck.delayMonths !== null && (
+                                <p className="flex items-center gap-2"><Target className="w-4 h-4 text-amber-600 shrink-0" />
+                                    {t('think.delay', { goal: pauseCheck.goal.name, months: pauseCheck.delayMonths < 1 ? Math.max(1, Math.round(pauseCheck.delayMonths * 30)) : pauseCheck.delayMonths.toFixed(1), unit: t(pauseCheck.delayMonths < 1 ? 'think.days' : 'think.months') })}</p>
+                            )}
+                            <button type="button" onClick={waitFirst} className="btn w-full mt-1 bg-amber-500 text-white hover:bg-amber-600">
+                                <Hourglass className="w-4 h-4" /> {t('think.wait', { hours: WAIT_HOURS })}
+                            </button>
+                        </div>
                     )}
 
                     <div className="flex gap-3 pt-1">

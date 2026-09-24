@@ -76,7 +76,8 @@
         "settings": "Settings",
         "more": "More",
         "add": "Add",
-        "salary": "Salary"
+        "salary": "Salary",
+        "habits": "Habits"
     },
     "sync": {
         "synced": "All changes saved to cloud",
@@ -441,5 +442,280 @@
         "title": "Something went wrong on this screen",
         "body": "Your data is safe on this device. Reload, or go back home. If it keeps happening, send us the message below.",
         "reload": "Reload"
+    },
+    "habits": {
+        "title": "Money habits",
+        "subtitle": "Know how you spend, stay disciplined, and get better every month.",
+        "tabs": {
+            "today": "Today",
+            "discipline": "Commitments & challenges",
+            "patterns": "Spending patterns"
+        },
+        "calendarTitle": "This month, day by day",
+        "noSpendCount_one": "{{count}} no-spend day",
+        "noSpendCount_other": "{{count}} no-spend days",
+        "dailyBudget": "Daily budget: {{amount}}",
+        "legend": {
+            "none": "No spending",
+            "under": "Within budget",
+            "over": "Over budget"
+        },
+        "weekdaysShort": [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+        ],
+        "weekdaysLong": [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+        ]
+    },
+    "allowance": {
+        "title": "You can spend today",
+        "ofDaily": "{{spent}} spent of {{daily}} today",
+        "over": "You are {{amount}} over today's limit – tomorrow's limit will be lower.",
+        "noIncome": "Add this month's income to get your daily spending limit.",
+        "streak_one": "day streak",
+        "streak_other": "day streak",
+        "explain": "Worked out from what is left this month, minus {{bills}} of upcoming bills and {{savings}} still to save, spread over {{days}} days.",
+        "log": "Record a spending"
+    },
+    "health": {
+        "title": "Money health score",
+        "subtitle": "How healthy your finances are this month, out of 100.",
+        "grades": {
+            "excellent": "Excellent",
+            "good": "Good",
+            "fair": "Fair",
+            "weak": "Needs work"
+        },
+        "parts": {
+            "savings": "Saving",
+            "budget": "Keeping to budget",
+            "emergency": "Safety net",
+            "debt": "Debt"
+        },
+        "detail": {
+            "savings": "You saved {{percent}} of your income.",
+            "budget": "You used {{percent}} of your Needs + Wants budget.",
+            "emergency": "Your emergency fund covers {{months}} months of essentials.",
+            "debt": "Your debt equals {{percent}} of a year's income.",
+            "noDebt": "No debt. Well done!"
+        },
+        "tips": {
+            "savings": "Save your share first on payday – even a small amount every month builds the habit.",
+            "budget": "Set a spending limit on your biggest category and check your daily allowance before you spend.",
+            "emergency": "Start an emergency fund and add to it every payday until it covers 3 months.",
+            "debt": "Use the debt planner on Net Worth and put any extra money on the most expensive loan."
+        },
+        "nextStep": "Your next step",
+        "trend": "Last 6 months",
+        "noData": "Add income and expenses to get your score."
+    },
+    "commitment": {
+        "title": "This month's commitment",
+        "subtitle": "One promise to yourself for {{month}}.",
+        "set": "Set",
+        "empty": "Make a commitment for this month – for example, keep eating out under 30,000 RWF.",
+        "editorTitle": "Commitment for {{month}}",
+        "editorHint": "Choose one clear promise. The app tracks it every day.",
+        "labels": {
+            "category_cap": "Keep one category under an amount",
+            "wants_cap": "Keep all Wants under an amount",
+            "save_min": "Save at least an amount",
+            "no_spend_days": "Have a number of no-spend days"
+        },
+        "types": {
+            "category_cap": "Keep {{category}} under {{amount}}",
+            "wants_cap": "Keep Wants under {{amount}}",
+            "save_min": "Save at least {{amount}}",
+            "no_spend_days": "Have {{amount}} no-spend days"
+        },
+        "status": {
+            "on_track": "On track",
+            "at_risk": "At risk",
+            "broken": "Broken",
+            "kept": "Kept",
+            "missed": "Missed"
+        },
+        "progressAmount": "{{current}} of {{target}}",
+        "progressDays": "{{current}} of {{target}} days",
+        "days": "Number of days",
+        "saved": "Commitment saved"
+    },
+    "review": {
+        "title": "Your {{month}} review",
+        "subtitle": "How last month went compared with the month before.",
+        "score": "Health score",
+        "spentLess": "You spent {{amount}} less on {{category}}.",
+        "spentMore": "You spent {{amount}} more on {{category}}.",
+        "commitmentKept": "You kept your commitment: {{commitment}}.",
+        "commitmentMissed": "You missed your commitment: {{commitment}}."
+    },
+    "challenges": {
+        "title": "Challenges",
+        "subtitle": "Short challenges that build strong habits.",
+        "start": "Start challenge",
+        "started": "Challenge started: {{from}} – {{to}}. You can do it!",
+        "history": "Finished",
+        "removeConfirm": "Give up this challenge?",
+        "giveUp": "Give up",
+        "wantsProgress": "Wants: {{current}} of {{limit}} allowed",
+        "saveProgress": "Saved {{current}} of {{target}}",
+        "noBaseline": "No Wants spending last month to compare with.",
+        "status": {
+            "upcoming": "Starts soon",
+            "active": "In progress",
+            "won": "Won",
+            "lost": "Lost"
+        },
+        "list": {
+            "no_spend_weekend": {
+                "title": "No-spend weekend",
+                "desc": "Spend nothing on Saturday and Sunday (bills don't count)."
+            },
+            "no_eating_out_week": {
+                "title": "A week without eating out",
+                "desc": "Seven days of cooking at home – no restaurants or take-away."
+            },
+            "cut_wants_20": {
+                "title": "Cut Wants by 20%",
+                "desc": "Spend at least 20% less on Wants this month than last month."
+            },
+            "save_10_percent": {
+                "title": "Save 10% this month",
+                "desc": "Put at least 10% of this month's income into savings."
+            }
+        }
+    },
+    "badges": {
+        "title": "Badges",
+        "subtitle": "{{count}} of {{total}} earned",
+        "list": {
+            "first_no_spend": {
+                "title": "First no-spend day",
+                "desc": "Go a whole day without flexible spending."
+            },
+            "streak_7": {
+                "title": "7-day streak",
+                "desc": "Stay within your daily budget 7 days in a row."
+            },
+            "streak_30": {
+                "title": "30-day streak",
+                "desc": "Stay within your daily budget 30 days in a row."
+            },
+            "score_80": {
+                "title": "Healthy finances",
+                "desc": "Reach a money health score of 80."
+            },
+            "safety_net": {
+                "title": "Safety net",
+                "desc": "Save 3 months of essential spending in your emergency fund."
+            },
+            "challenge_won": {
+                "title": "Challenger",
+                "desc": "Win your first challenge."
+            },
+            "three_challenges": {
+                "title": "Champion",
+                "desc": "Win three challenges."
+            },
+            "wise_skip": {
+                "title": "Wise choice",
+                "desc": "Skip a purchase after waiting 24 hours."
+            }
+        }
+    },
+    "wishlist": {
+        "title": "Waiting list",
+        "subtitle": "Big purchases you chose to think about first.",
+        "empty": "Nothing waiting. When you add a big Wants purchase, you can choose to wait 24 hours.",
+        "waiting": "Decide in {{hours}} h",
+        "ready": "Ready – do you still want it?",
+        "notYet": "Wait the full 24 hours first",
+        "buy": "Buy it",
+        "skip": "Skip it",
+        "skippedToast": "Good choice! You kept {{amount}}.",
+        "savedSoFar": "Money kept by skipping purchases: {{amount}}"
+    },
+    "think": {
+        "title": "Think before you buy",
+        "workDays": "This costs about {{days}} days of your work.",
+        "delay": "It could delay \"{{goal}}\" by about {{months}} {{unit}}.",
+        "months": "months",
+        "days": "days",
+        "wait": "Wait {{hours}} hours first",
+        "added": "{{amount}} added to your waiting list. Decide tomorrow."
+    },
+    "patterns": {
+        "weekdayTitle": "When you spend",
+        "avgPerDay": "Average",
+        "peakDay": "You spend most on {{day}}s – about {{amount}}, compared with {{avg}} on an average day.",
+        "evenWeek": "Your spending is spread evenly across the week – about {{avg}} a day.",
+        "leaksTitle": "Small spending that adds up",
+        "leaksHint": "Purchases under 10,000 RWF in the last 30 days.",
+        "leak_one": "{{category}}: {{count}} time",
+        "leak_other": "{{category}}: {{count}} times",
+        "noLeaks": "No repeated small purchases. Nice!",
+        "paydayTitle": "Payday spending",
+        "paydayNoData": "Record your salary as \"Salary\" to see how payday affects your spending.",
+        "paydayHigh": "You spend {{percent}} of your Wants budget in the first week after payday. Plan that week carefully.",
+        "paydayOk": "{{percent}} of your Wants spending happens in the week after payday – nicely spread.",
+        "changesTitle": "Changes this month",
+        "changesHint": "Compared with your average over the last 3 months, adjusted for how far into the month we are.",
+        "noChanges": "No big changes – your spending is steady.",
+        "vsAverage": "{{current}} so far · usually {{average}} a month",
+        "notEnough": "Record at least a few expenses to see your spending patterns."
+    },
+    "debt": {
+        "title": "Debt payoff planner",
+        "subtitle": "See which loan to clear first and when you will be debt-free.",
+        "rate": "Interest (% per year)",
+        "payment": "Monthly payment (RWF)",
+        "strategy": "Strategy",
+        "avalanche": "Avalanche",
+        "avalancheHint": "Highest interest first – pays least interest",
+        "snowball": "Snowball",
+        "snowballHint": "Smallest loan first – quick wins",
+        "extra": "Extra per month (RWF)",
+        "extraHint": "Money you can add on top of your normal payments.",
+        "missing": "Add the monthly payment for these loans to plan accurately:",
+        "notFeasible": "With these payments the loans never get paid off – interest grows faster. Add your monthly payments or an extra amount.",
+        "freeBy": "Debt-free by",
+        "summary": "{{months}} months · {{interest}} total interest · {{payment}} per month",
+        "extraEffect": "Paying {{amount}} extra makes you debt-free {{months}} months sooner and saves {{interest}} in interest.",
+        "otherBetter": "Tip: {{strategy}} would save you {{amount}} more in interest.",
+        "paidOff": "paid off {{date}}"
+    },
+    "reminders": {
+        "title": "Reminders",
+        "hint": "Get notifications that keep your money habits on track.",
+        "list": {
+            "log": "Evening reminder if you haven't recorded any spending today",
+            "payday": "Payday: save for your goals before spending",
+            "bills": "A bill is due tomorrow",
+            "over": "You went over today's spending limit"
+        },
+        "note": "Reminders appear while WalletWise is open or running in the background on this device.",
+        "enabled": "Reminders are on",
+        "blocked": "Notifications are blocked. Allow them for this site in your browser settings.",
+        "unsupported": "This browser does not support notifications.",
+        "logTitle": "Did you record today's spending?",
+        "logBody": "Take 30 seconds to add what you spent today.",
+        "paydayTitle": "It's payday – save first!",
+        "paydayBody": "Move {{amount}} to your goals before you start spending.",
+        "billTitle": "Bill due tomorrow",
+        "billBody": "{{name}}: {{amount}} is due tomorrow.",
+        "overTitle": "Over today's limit",
+        "overBody": "You are {{amount}} over today's spending limit."
     }
 }

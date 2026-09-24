@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PieChart, Scale, Repeat, FileText, Settings, LogOut, ChevronRight, Wallet } from 'lucide-react';
+import { PieChart, Scale, Repeat, FileText, Settings, LogOut, ChevronRight, Wallet, Target } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { PageHeader } from '../ui/bits';
 
 const LINKS = [
+    { to: '/goals', icon: Target, key: 'nav.goals', color: '#FF6B35' },
     { to: '/salary', icon: Wallet, key: 'nav.salary', color: '#16a34a' },
     { to: '/budget', icon: PieChart, key: 'nav.budget', color: '#6366f1' },
     { to: '/net-worth', icon: Scale, key: 'nav.netWorth', color: '#10b981' },

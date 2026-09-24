@@ -9,7 +9,7 @@ const SOURCE_IDS = new Set(SOURCES.map(s => s.id));
 
 const DATE_FIELDS = ['date', 'transaction_date', 'created_at', 'updated_at', 'deadline', 'completed_at'];
 const DAY_FIELDS = new Set(['date', 'deadline']); // stored as 'yyyy-MM-dd'
-const NUMBER_FIELDS = ['amount', 'target_amount', 'current_amount', 'net_worth', 'day_of_month', 'monthly_contribution'];
+const NUMBER_FIELDS = ['amount', 'target_amount', 'current_amount', 'net_worth', 'day_of_month', 'monthly_contribution', 'interest_rate', 'monthly_payment'];
 
 export const toISO = (value) => {
     if (value === null || value === undefined || value === '') return null;

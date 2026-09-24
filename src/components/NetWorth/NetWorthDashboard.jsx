@@ -9,6 +9,7 @@ import { recordNetWorthSnapshot } from '../../lib/networth';
 import { ASSET_TYPES, LIABILITY_TYPES, getAssetType, getLiabilityType } from '../../lib/categories';
 import { formatMoney, formatCompact, formatDate } from '../../lib/format';
 import Modal from '../ui/Modal';
+import DebtPlanner from './DebtPlanner';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { PageHeader, Spinner, CategoryIcon } from '../ui/bits';
 
@@ -22,6 +23,8 @@ const ItemEditor = ({ item, onClose }) => {
         name: item.row?.name || '',
         type: item.row?.type || types[0].id,
         amount: item.row ? String(item.row.amount) : '',
+        interest_rate: item.row?.interest_rate != null ? String(item.row.interest_rate) : '',
+        monthly_payment: item.row?.monthly_payment != null ? String(item.row.monthly_payment) : '',
     });
     const [confirm, setConfirm] = useState(false);
 
@@ -30,6 +33,10 @@ const ItemEditor = ({ item, onClose }) => {
         const amount = Number(form.amount);
         if (!form.name.trim() || !(amount >= 0)) return;
         const fields = { name: form.name.trim(), type: form.type, amount };
+        if (!isAsset) {
+            fields.interest_rate = form.interest_rate === '' ? null : Number(form.interest_rate);
+            fields.monthly_payment = form.monthly_payment === '' ? null : Number(form.monthly_payment);
+        }
         if (item.row) await updateRecord(item.table, item.row.id, fields);
         else await createRecord(item.table, user.id, fields);
         await recordNetWorthSnapshot(user.id);
@@ -74,6 +81,20 @@ const ItemEditor = ({ item, onClose }) => {
                         <input id="nw-amount" type="number" inputMode="numeric" min="0" required className="input text-lg font-semibold"
                             value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
                     </div>
+                    {!isAsset && (
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="label" htmlFor="nw-rate">{t('debt.rate')}</label>
+                                <input id="nw-rate" type="number" inputMode="decimal" min="0" step="0.1" className="input" placeholder="18"
+                                    value={form.interest_rate} onChange={e => setForm(f => ({ ...f, interest_rate: e.target.value }))} />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="nw-pay">{t('debt.payment')}</label>
+                                <input id="nw-pay" type="number" inputMode="numeric" min="0" className="input" placeholder="50000"
+                                    value={form.monthly_payment} onChange={e => setForm(f => ({ ...f, monthly_payment: e.target.value }))} />
+                            </div>
+                        </div>
+                    )}
                     <div className="flex gap-3">
                         {item.row && (
                             <button type="button" className="btn-ghost text-red-500" onClick={() => setConfirm(true)} aria-label={t('common.delete')}>
@@ -209,6 +230,8 @@ const NetWorthDashboard = () => {
                 <ItemList title={t('netWorth.liabilities')} rows={liabilities} total={totalLiabilities} table="liabilities" getType={getLiabilityType}
                     tone="text-rose-600 dark:text-rose-400" emptyText={t('netWorth.noLiabilities')} onOpen={setEditing} />
             </div>
+
+            {liabilities.length > 0 && <DebtPlanner liabilities={liabilities} onEdit={(row) => setEditing({ table: 'liabilities', row })} />}
 
             {editing && <ItemEditor item={editing} onClose={() => setEditing(null)} />}
         </div>

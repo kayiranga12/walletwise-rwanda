@@ -7,6 +7,9 @@ import { useUserTable, useSettings, useUpcomingBills } from '../../lib/hooks';
 import { plannedContribution, paidThisPayday } from '../../lib/goals';
 import { salaryForMonth } from '../../lib/salary';
 import UpcomingBills from '../Salary/UpcomingBills';
+import AllowanceCard from '../Habits/AllowanceCard';
+import { HealthScoreMini } from '../Habits/HealthScoreCard';
+import { useDiscipline } from '../../lib/useDiscipline';
 import { summarizeMonth, buildInsights } from '../../lib/insights';
 import { BUCKETS } from '../../lib/categories';
 import { monthKey, formatMoney, entryMonth, entryDay, daysInMonthKey } from '../../lib/format';
@@ -40,6 +43,7 @@ const Dashboard = () => {
     const goalTransactions = useUserTable('transactions');
     const { split, limits } = useSettings();
     const bills = useUpcomingBills();
+    const discipline = useDiscipline();
     const month = monthKey();
 
     const data = useMemo(() => {
@@ -88,6 +92,13 @@ const Dashboard = () => {
                     </button>
                 </div>
             </div>
+
+            {discipline && (
+                <div className="grid lg:grid-cols-2 gap-4">
+                    <AllowanceCard allowance={discipline.allowance} streak={discipline.streak} compact />
+                    <HealthScoreMini health={discipline.health} />
+                </div>
+            )}
 
             {salary > 0 && paydayToSave > 0 && (
                 <Link to="/salary" className="flex items-center gap-4 rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-md hover:shadow-lg transition">

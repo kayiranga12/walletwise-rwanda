@@ -11,6 +11,7 @@ import { Spinner } from './components/ui/bits';
 const Login = lazy(() => import('./components/Auth/Login'));
 const Signup = lazy(() => import('./components/Auth/Signup'));
 const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
+const HabitsPage = lazy(() => import('./components/Habits/HabitsPage'));
 const MoneyPage = lazy(() => import('./components/Money/MoneyPage'));
 const SalaryPage = lazy(() => import('./components/Salary/SalaryPage'));
 const BudgetDashboard = lazy(() => import('./components/Budget/BudgetDashboard'));
@@ -76,6 +77,7 @@ function App() {
                     <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                         <Route path="/" element={<Suspense fallback={<Spinner />}><Dashboard /></Suspense>} />
+                        <Route path="/habits" element={<Suspense fallback={<Spinner />}><HabitsPage /></Suspense>} />
                         <Route path="/money" element={<Suspense fallback={<Spinner />}><MoneyPage /></Suspense>} />
                         <Route path="/salary" element={<Suspense fallback={<Spinner />}><SalaryPage /></Suspense>} />
                         <Route path="/budget" element={<Suspense fallback={<Spinner />}><BudgetDashboard /></Suspense>} />

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-    LayoutDashboard, ArrowLeftRight, Target, PieChart, Scale, Repeat, FileText, Settings,
+    LayoutDashboard, ArrowLeftRight, Target, PieChart, Brain, Scale, Repeat, FileText, Settings,
     LogOut, Plus, Bell, Ellipsis, Cloud, CloudOff, RefreshCw, Wallet
 } from 'lucide-react';
 import useStore from '../../store/useStore';
@@ -12,11 +12,13 @@ import { buildInsights } from '../../lib/insights';
 import { monthKey } from '../../lib/format';
 import EntrySheet from '../Money/EntrySheet';
 import Celebration from '../Goals/Celebration';
+import ReminderRunner from './ReminderRunner';
 import { InsightItem } from '../ui/bits';
 import ErrorBoundary from '../ui/ErrorBoundary';
 
 const NAV = [
     { to: '/', icon: LayoutDashboard, key: 'nav.home', end: true },
+    { to: '/habits', icon: Brain, key: 'nav.habits' },
     { to: '/money', icon: ArrowLeftRight, key: 'nav.money' },
     { to: '/salary', icon: Wallet, key: 'nav.salary' },
     { to: '/budget', icon: PieChart, key: 'nav.budget' },
@@ -180,13 +182,14 @@ const AppLayout = () => {
                             <Plus className="w-7 h-7" />
                         </button>
                     </div>
-                    <NavLink to="/goals" className={bottomLink}><Target className="w-5 h-5" />{t('nav.goals')}</NavLink>
+                    <NavLink to="/habits" className={bottomLink}><Brain className="w-5 h-5" />{t('nav.habits')}</NavLink>
                     <NavLink to="/more" className={bottomLink}><Ellipsis className="w-5 h-5" />{t('nav.more')}</NavLink>
                 </div>
             </nav>
 
             <EntrySheet />
             <Celebration />
+            <ErrorBoundary fallback={null}><ReminderRunner /></ErrorBoundary>
         </div>
     );
 };

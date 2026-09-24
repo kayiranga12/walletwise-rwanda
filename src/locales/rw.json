@@ -76,7 +76,8 @@
         "settings": "Igenamiterere",
         "more": "Ibindi",
         "add": "Ongeraho",
-        "salary": "Umushahara"
+        "salary": "Umushahara",
+        "habits": "Imyitwarire"
     },
     "sync": {
         "synced": "Byose byabitswe kuri cloud",
@@ -441,5 +442,280 @@
         "title": "Habaye ikibazo kuri iyi paji",
         "body": "Amakuru yawe abitswe neza kuri iki gikoresho. Ongera ufungure, cyangwa usubire ahabanza. Niba bikomeje, twoherereze ubutumwa buri hepfo.",
         "reload": "Ongera ufungure"
+    },
+    "habits": {
+        "title": "Imyitwarire mu mafaranga",
+        "subtitle": "Menya uko ukoresha amafaranga, gira ikinyabupfura, kandi utere imbere buri kwezi.",
+        "tabs": {
+            "today": "Uyu munsi",
+            "discipline": "Imihigo n'amarushanwa",
+            "patterns": "Uko ukoresha"
+        },
+        "calendarTitle": "Uku kwezi, umunsi ku munsi",
+        "noSpendCount_one": "Umunsi {{count}} utakoresheje",
+        "noSpendCount_other": "Iminsi {{count}} utakoresheje",
+        "dailyBudget": "Ingengo y'umunsi: {{amount}}",
+        "legend": {
+            "none": "Nta cyo wakoresheje",
+            "under": "Mu ngengo",
+            "over": "Warengeje"
+        },
+        "weekdaysShort": [
+            "Cyu",
+            "Mbe",
+            "Kab",
+            "Gtu",
+            "Kan",
+            "Gnu",
+            "Gnd"
+        ],
+        "weekdaysLong": [
+            "Ku cyumweru",
+            "Ku wa mbere",
+            "Ku wa kabiri",
+            "Ku wa gatatu",
+            "Ku wa kane",
+            "Ku wa gatanu",
+            "Ku wa gatandatu"
+        ]
+    },
+    "allowance": {
+        "title": "Ushobora gukoresha uyu munsi",
+        "ofDaily": "Wakoresheje {{spent}} kuri {{daily}} uyu munsi",
+        "over": "Warengeje imbibi z'uyu munsi ho {{amount}} – iz'ejo zizaba nke.",
+        "noIncome": "Andika ayinjiye uku kwezi kugira ngo ubone imbibi z'ibyo ukoresha ku munsi.",
+        "streak_one": "umunsi ukurikiranye",
+        "streak_other": "iminsi ikurikiranye",
+        "explain": "Byabazwe hashingiwe ku asigaye uku kwezi, hakuwemo {{bills}} yo kwishyura na {{savings}} yo kuzigama, bigabanywa mu minsi {{days}}.",
+        "log": "Andika ayo wakoresheje"
+    },
+    "health": {
+        "title": "Amanota y'ubuzima bw'amafaranga",
+        "subtitle": "Uko imari yawe ihagaze uku kwezi, ku manota 100.",
+        "grades": {
+            "excellent": "Byiza cyane",
+            "good": "Byiza",
+            "fair": "Biringaniye",
+            "weak": "Bikeneye kunozwa"
+        },
+        "parts": {
+            "savings": "Kuzigama",
+            "budget": "Kubahiriza ingengo",
+            "emergency": "Ikigega cy'ingoboka",
+            "debt": "Imyenda"
+        },
+        "detail": {
+            "savings": "Wazigamye {{percent}} by'ayo winjije.",
+            "budget": "Wakoresheje {{percent}} by'ingengo y'iby'ingenzi n'ibyo wifuza.",
+            "emergency": "Ikigega cyawe cy'ingoboka gihagije amezi {{months}} y'iby'ingenzi.",
+            "debt": "Imyenda yawe ingana na {{percent}} by'ayo winjiza mu mwaka.",
+            "noDebt": "Nta mwenda. Ni byiza!"
+        },
+        "tips": {
+            "savings": "Banza uzigame umugabane wawe ukimara guhembwa – no gake buri kwezi byubaka umuco.",
+            "budget": "Shyiraho imbibi ku cyiciro ukoresha cyane, kandi urebe ayo wemerewe gukoresha ku munsi mbere yo gukoresha.",
+            "emergency": "Tangira ikigega cy'ingoboka ujye ucyongera buri gihe uhembwe kugeza gihagije amezi 3.",
+            "debt": "Koresha igenamigambi ry'imyenda ku ipaji y'Umutungo, ushyire amafaranga y'inyongera ku nguzanyo ihenze kurusha izindi."
+        },
+        "nextStep": "Intambwe ikurikira",
+        "trend": "Amezi 6 ashize",
+        "noData": "Andika ayinjiye n'ayasohotse ubone amanota yawe."
+    },
+    "commitment": {
+        "title": "Umuhigo w'uku kwezi",
+        "subtitle": "Umuhigo umwe wiyemeje muri {{month}}.",
+        "set": "Shyiraho",
+        "empty": "Iyemeze umuhigo w'uku kwezi – urugero: kurya hanze munsi ya 30,000 RWF.",
+        "editorTitle": "Umuhigo wa {{month}}",
+        "editorHint": "Hitamo umuhigo umwe usobanutse. Porogaramu izawukurikirana buri munsi.",
+        "labels": {
+            "category_cap": "Kugumisha icyiciro kimwe munsi y'amafaranga runaka",
+            "wants_cap": "Kugumisha ibyo wifuza byose munsi y'amafaranga runaka",
+            "save_min": "Kuzigama nibura amafaranga runaka",
+            "no_spend_days": "Kugira iminsi runaka utakoresheje"
+        },
+        "types": {
+            "category_cap": "Kugumisha {{category}} munsi ya {{amount}}",
+            "wants_cap": "Kugumisha ibyo wifuza munsi ya {{amount}}",
+            "save_min": "Kuzigama nibura {{amount}}",
+            "no_spend_days": "Kugira iminsi {{amount}} utakoresheje"
+        },
+        "status": {
+            "on_track": "Mu nzira nziza",
+            "at_risk": "Hari ibyago",
+            "broken": "Warengeje",
+            "kept": "Wabigezeho",
+            "missed": "Ntiwabigezeho"
+        },
+        "progressAmount": "{{current}} kuri {{target}}",
+        "progressDays": "Iminsi {{current}} kuri {{target}}",
+        "days": "Umubare w'iminsi",
+        "saved": "Umuhigo wabitswe"
+    },
+    "review": {
+        "title": "Isuzuma rya {{month}}",
+        "subtitle": "Uko ukwezi gushize kwagenze ugereranyije n'ukwakubanjirije.",
+        "score": "Amanota",
+        "spentLess": "Wakoresheje {{amount}} nke kuri {{category}}.",
+        "spentMore": "Wakoresheje {{amount}} nyinshi kuri {{category}}.",
+        "commitmentKept": "Wesheje umuhigo wawe: {{commitment}}.",
+        "commitmentMissed": "Ntiwesheje umuhigo wawe: {{commitment}}."
+    },
+    "challenges": {
+        "title": "Amarushanwa",
+        "subtitle": "Amarushanwa magufi yubaka imico myiza.",
+        "start": "Tangira",
+        "started": "Irushanwa ryatangiye: {{from}} – {{to}}. Urabishoboye!",
+        "history": "Ayarangiye",
+        "removeConfirm": "Kureka iri rushanwa?",
+        "giveUp": "Reka",
+        "wantsProgress": "Ibyo wifuza: {{current}} kuri {{limit}} byemewe",
+        "saveProgress": "Wazigamye {{current}} kuri {{target}}",
+        "noBaseline": "Nta byo wifuza wakoresheje ukwezi gushize byo kugereranya.",
+        "status": {
+            "upcoming": "Rizatangira vuba",
+            "active": "Birakomeje",
+            "won": "Waritsinze",
+            "lost": "Waritsinzwe"
+        },
+        "list": {
+            "no_spend_weekend": {
+                "title": "Impera z'icyumweru nta gukoresha",
+                "desc": "Ntukoreshe na make ku wa gatandatu no ku cyumweru (ibyo kwishyura bisanzwe ntibibarwa)."
+            },
+            "no_eating_out_week": {
+                "title": "Icyumweru nta kurya hanze",
+                "desc": "Iminsi irindwi utekera mu rugo – nta resitora."
+            },
+            "cut_wants_20": {
+                "title": "Gabanya ibyo wifuza 20%",
+                "desc": "Koresha nibura 20% nke ku byo wifuza ugereranyije n'ukwezi gushize."
+            },
+            "save_10_percent": {
+                "title": "Zigama 10% uku kwezi",
+                "desc": "Shyira nibura 10% by'ayo winjije uku kwezi mu kuzigama."
+            }
+        }
+    },
+    "badges": {
+        "title": "Imidari",
+        "subtitle": "{{count}} kuri {{total}} wabonye",
+        "list": {
+            "first_no_spend": {
+                "title": "Umunsi wa mbere nta gukoresha",
+                "desc": "Mara umunsi wose nta kintu ukoresheje."
+            },
+            "streak_7": {
+                "title": "Iminsi 7 ikurikiranye",
+                "desc": "Guma mu ngengo y'umunsi iminsi 7 ikurikiranye."
+            },
+            "streak_30": {
+                "title": "Iminsi 30 ikurikiranye",
+                "desc": "Guma mu ngengo y'umunsi iminsi 30 ikurikiranye."
+            },
+            "score_80": {
+                "title": "Imari ifite ubuzima",
+                "desc": "Gera ku manota 80."
+            },
+            "safety_net": {
+                "title": "Ikigega cy'ingoboka",
+                "desc": "Zigama amezi 3 y'iby'ingenzi mu kigega cy'ingoboka."
+            },
+            "challenge_won": {
+                "title": "Umuhatanyi",
+                "desc": "Tsinda irushanwa ryawe rya mbere."
+            },
+            "three_challenges": {
+                "title": "Intwari",
+                "desc": "Tsinda amarushanwa atatu."
+            },
+            "wise_skip": {
+                "title": "Icyemezo cyiza",
+                "desc": "Reka kugura ikintu nyuma yo gutegereza amasaha 24."
+            }
+        }
+    },
+    "wishlist": {
+        "title": "Urutonde rwo gutegereza",
+        "subtitle": "Ibintu binini wahisemo kubanza gutekerezaho.",
+        "empty": "Nta kintu gitegereje. Niwandika ikintu kinini wifuza kugura, ushobora guhitamo gutegereza amasaha 24.",
+        "waiting": "Uzafata icyemezo mu masaha {{hours}}",
+        "ready": "Igihe kirageze – uracyagishaka?",
+        "notYet": "Banza utegereze amasaha 24 yose",
+        "buy": "Kigure",
+        "skip": "Kireke",
+        "skippedToast": "Icyemezo cyiza! Wazigamye {{amount}}.",
+        "savedSoFar": "Amafaranga wazigamye ureka kugura: {{amount}}"
+    },
+    "think": {
+        "title": "Banza utekereze mbere yo kugura",
+        "workDays": "Ibi bingana n'iminsi {{days}} y'akazi kawe.",
+        "delay": "Bishobora gutinza \"{{goal}}\" nka {{months}} {{unit}}.",
+        "months": "amezi",
+        "days": "iminsi",
+        "wait": "Banza utegereze amasaha {{hours}}",
+        "added": "{{amount}} yongewe ku rutonde rwo gutegereza. Uzafata icyemezo ejo."
+    },
+    "patterns": {
+        "weekdayTitle": "Igihe ukoresha cyane",
+        "avgPerDay": "Ikigereranyo",
+        "peakDay": "Ukoresha cyane {{day}} – nka {{amount}}, ugereranyije na {{avg}} ku munsi usanzwe.",
+        "evenWeek": "Ibyo ukoresha bigabanyije neza mu cyumweru – nka {{avg}} ku munsi.",
+        "leaksTitle": "Duto twiyongeranya",
+        "leaksHint": "Ibyaguzwe munsi ya 10,000 RWF mu minsi 30 ishize.",
+        "leak_one": "{{category}}: inshuro {{count}}",
+        "leak_other": "{{category}}: inshuro {{count}}",
+        "noLeaks": "Nta duto dusubirwamo. Ni byiza!",
+        "paydayTitle": "Gukoresha nyuma yo guhembwa",
+        "paydayNoData": "Andika umushahara nka \"Umushahara\" urebe uko guhembwa bigira ingaruka ku byo ukoresha.",
+        "paydayHigh": "Ukoresha {{percent}} by'ibyo wifuza mu cyumweru cya mbere nyuma yo guhembwa. Tegura icyo cyumweru neza.",
+        "paydayOk": "{{percent}} by'ibyo wifuza bikoreshwa mu cyumweru gikurikira guhembwa – bigabanyije neza.",
+        "changesTitle": "Impinduka uku kwezi",
+        "changesHint": "Ugereranyije n'ikigereranyo cy'amezi 3 ashize, hakurikijwe aho ukwezi kugeze.",
+        "noChanges": "Nta mpinduka nini – ibyo ukoresha birahamye.",
+        "vsAverage": "{{current}} kugeza ubu · ubusanzwe {{average}} ku kwezi",
+        "notEnough": "Andika nibura ibyo wakoresheje bike urebe uko ukoresha amafaranga."
+    },
+    "debt": {
+        "title": "Igenamigambi ryo kwishyura imyenda",
+        "subtitle": "Reba inguzanyo wabanza kwishyura n'igihe uzaba utakibereyemo umwenda.",
+        "rate": "Inyungu (% ku mwaka)",
+        "payment": "Ayo wishyura buri kwezi (RWF)",
+        "strategy": "Uburyo",
+        "avalanche": "Avalanche",
+        "avalancheHint": "Inyungu nyinshi mbere – wishyura inyungu nke",
+        "snowball": "Snowball",
+        "snowballHint": "Inguzanyo nto mbere – intsinzi yihuse",
+        "extra": "Inyongera buri kwezi (RWF)",
+        "extraHint": "Amafaranga ushobora kongera ku yo usanzwe wishyura.",
+        "missing": "Ongeraho ayo wishyura buri kwezi kuri izi nguzanyo kugira ngo igenamigambi ribe nyaryo:",
+        "notFeasible": "Ukurikije ibi, inguzanyo ntizizarangira – inyungu ziyongera vuba. Ongeraho ayo wishyura buri kwezi cyangwa inyongera.",
+        "freeBy": "Uzaba utakibereyemo umwenda muri",
+        "summary": "Amezi {{months}} · inyungu zose {{interest}} · {{payment}} buri kwezi",
+        "extraEffect": "Kwishyura {{amount}} y'inyongera bizatuma urangiza imyenda amezi {{months}} mbere kandi uzigame {{interest}} y'inyungu.",
+        "otherBetter": "Inama: {{strategy}} yakuzigamira {{amount}} y'inyungu kurushaho.",
+        "paidOff": "izarangira {{date}}"
+    },
+    "reminders": {
+        "title": "Kwibutswa",
+        "hint": "Akira ubutumwa bukwibutsa gukomeza imico myiza mu mafaranga.",
+        "list": {
+            "log": "Nimugoroba niba nta cyo wanditse uyu munsi",
+            "payday": "Umunsi wo guhembwa: zigama mbere yo gukoresha",
+            "bills": "Hari ibyo kwishyura ejo",
+            "over": "Warengeje imbibi z'uyu munsi"
+        },
+        "note": "Ubutumwa bugaragara igihe WalletWise ifunguye cyangwa ikora inyuma kuri iki gikoresho.",
+        "enabled": "Kwibutswa byatangiye",
+        "blocked": "Ubutumwa bwahagaritswe. Bwemerere kuri uru rubuga mu igenamiterere rya mushakisha.",
+        "unsupported": "Iyi mushakisha ntishobora kohereza ubutumwa.",
+        "logTitle": "Wanditse ibyo wakoresheje uyu munsi?",
+        "logBody": "Fata amasegonda 30 wandike ibyo wakoresheje uyu munsi.",
+        "paydayTitle": "Wahembwe – banza uzigame!",
+        "paydayBody": "Shyira {{amount}} mu ntego zawe mbere yo gutangira gukoresha.",
+        "billTitle": "Ibyo kwishyura ejo",
+        "billBody": "{{name}}: {{amount}} bigomba kwishyurwa ejo.",
+        "overTitle": "Warengeje imbibi z'uyu munsi",
+        "overBody": "Warengeje imbibi z'uyu munsi ho {{amount}}."
     }
 }
