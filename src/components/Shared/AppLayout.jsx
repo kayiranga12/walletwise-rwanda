@@ -94,9 +94,8 @@ const AlertsBell = () => {
 };
 
 const Logo = () => (
-    <Link to="/" className="flex items-center gap-2">
-        <img src="/icon.svg" alt="" className="w-8 h-8" />
-        <span className="text-xl font-extrabold text-primary tracking-tight">WalletWise</span>
+    <Link to="/" className="flex items-center" aria-label="WalletWise">
+        <img src="/logo.png" alt="WalletWise" className="h-8 w-auto" />
     </Link>
 );
 

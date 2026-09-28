@@ -8,11 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo.png', 'logo-white.png', 'logo-mark.png'],
       manifest: {
         name: 'WalletWise Rwanda',
         short_name: 'WalletWise',
-        description: 'Learn to save money with fun goals',
+        description: 'Budget, save and build money discipline – in RWF.',
         theme_color: '#FF6B35',
         background_color: '#FFFFFF',
         display: 'standalone',
@@ -26,6 +26,12 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png'
+          },
+          {
+            src: 'maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }
